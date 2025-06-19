@@ -52,7 +52,8 @@ RUN if [ -n "${APT_CMD}" ]; then \
     libffi-dev \
     software-properties-common \
     python3-launchpadlib \
-    wget; \
+    wget \
+    git make gawk flex bison libgmp-dev libmpfr-dev libmpc-dev binutils perl libisl-dev libzstd-dev tar gzip bzip2; \
   elif [ -n "${YUM_CMD}" ]; then \
     yum groupinstall 'Development Tools' -y && yum install -y \
       gcc \
@@ -84,7 +85,7 @@ RUN if [ -n "${APT_CMD}" ]; then \
   fi
 
 # If running Ubuntu Version 20.04 or later, install the following dependencies
-RUN if [ -n "${APT_CMD}" ] && [ "$(grep '^ID=' /etc/os-release | awk -F'=' '{print $2}')" != "ubuntu" ] || [ dpkg --compare-versions "$(grep '^VERSION=' /etc/os-release | sed -n 's/VERSION="\([0-9]*\.[0-9]*\.[0-9]*\).*/\1/p')" lt '20.04' ]; then \
+RUN if [ -n "${APT_CMD}" ] && [ "$(grep '^ID=' /etc/os-release | awk -F'=' '{print $2}')" != "ubuntu" ] || [ dpkg --compare-versions "$(grep '^VERSION=' /etc/os-release | sed -n 's/VERSION=\"\([0-9]*\.[0-9]*\.[0-9]*\).*/\1/p')" lt '20.04' ]; then \
   apt-get install -y libgdbm-compat-dev; \
 fi
 
@@ -113,5 +114,84 @@ RUN mkdir -p /home/factoryengine/out
 
 # Now, tar the 4 folders and symlink
 RUN tar cvf - ./bin ./include ./lib ./share ./python | gzip -9  - > "/home/factoryengine/out/Python-${PYTHON_VERSION}-$(grep '^ID=' /etc/os-release | awk -F'=' '{print $2}')_$(grep -oP '^VERSION="\d+.*$' /etc/os-release | sed -n 's/VERSION="\([0-9]*\)\..*/\1/p')_$(uname -m).tar.gz"
+
+WORKDIR /home/factoryengine
+
+
+
+
+
+#######
+# GCC #
+#######
+
+ARG GCC_VERSION="15.1.0"
+ARG GCC_TAG="releases/gcc-${GCC_VERSION}"
+ENV GCC_INSTALL_DIR="/usr/local/factoryengine/gcc"
+
+RUN if [ -n "${APT_CMD}" ]; then \
+    git clone git://gcc.gnu.org/git/gcc.git -b ${GCC_TAG} --depth=1; \
+  fi
+
+# https://gcc.gnu.org/git.html
+# https://medium.com/@xersendo/moving-to-c-26-how-to-build-and-set-up-gcc-15-1-on-ubuntu-f52cc9173fa0
+# RUN sudo apt install -y build-essential git make gawk flex bison libgmp-dev libmpfr-dev libmpc-dev python3 binutils perl libisl-dev libzstd-dev tar gzip bzip2
+# export CONFIG_SHELL=/bin/bash
+ENV CONFIG_SHELL=/bin/bash
+
+WORKDIR ./gcc
+RUN if [ -n "${APT_CMD}" ]; then \
+    ./contrib/download_prerequisites; \
+  fi
+RUN if [ -n "${APT_CMD}" ]; then \
+    mkdir build -p; \
+  fi
+WORKDIR ./build
+
+RUN echo "$(gcc -v)"
+RUN echo "$(uname -m)"
+
+USER root
+RUN if [ -n "${APT_CMD}" ]; then \
+  apt-get install -y python3; \
+  fi
+RUN mkdir -p "${GCC_INSTALL_DIR}" && chown -R ${UID}:${GID} "${GCC_INSTALL_DIR}"
+USER factoryengine
+
+RUN if [ -n "${APT_CMD}" ] & [ "$(uname -m)" = "x86_64" ]; then \
+    export SPECIAL_FLAGS=""; \
+    export LOCAL_TRIPLET="x86_64"; \
+    echo "Using x85_64"; \
+else \
+    export SPECIAL_FLAGS="--enable-fix-cortex-a53-843419"; \
+    export LOCAL_TRIPLET="aarch64"; \
+    echo "Using aarch64"; \
+fi && if [ -n "${APT_CMD}" ]; then \
+  ../configure --enable-languages=c,c++,fortran --prefix=${GCC_INSTALL_DIR} --disable-multilib --disable-multi-arch \
+  --program-suffix=-15 \
+  --host=${LOCAL_TRIPLET}-linux-gnu \
+  --target=${LOCAL_TRIPLET}-linux-gnu \
+  --disable-werror \
+  --enable-checking=release \
+  --enable-clocale=gnu \
+  --enable-default-pie \
+  --enable-gnu-unique-object \
+  --enable-libphobos-checking=release \
+  --enable-libstdcxx-debug \
+  --enable-libstdcxx-time=yes \
+  --enable-linker-build-id \
+  --enable-nls \
+  --enable-plugin \
+  --enable-shared \
+  --enable-threads=posix \
+  --with-default-libstdcxx-abi=new \
+  --with-gcc-major-version-only ${SPECIAL_FLAGS} \
+  && make -j$(nproc) \
+  && make install; \
+fi
+
+RUN if [ -n "${APT_CMD}" ]; then \
+    tar cvf - ${GCC_INSTALL_DIR} | gzip -9  - > "/home/factoryengine/out/gcc-${GCC_VERSION}-$(grep '^ID=' /etc/os-release | awk -F'=' '{print $2}')_$(grep -oP '^VERSION=\"\d+.*$' /etc/os-release | sed -n 's/VERSION=\"\([0-9]*\)\..*/\1/p')_$(uname -m).tar.gz"; \
+fi
 
 WORKDIR /home/factoryengine
