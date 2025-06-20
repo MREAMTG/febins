@@ -224,6 +224,7 @@ RUN groupadd -o -g ${GID} factoryengine
 RUN useradd -o -u ${UID} -g ${GID} -s /bin/sh -d /home/factoryengine -m factoryengine
 
 WORKDIR /home/factoryengine
+USER factoryengine
 RUN mkdir -p /home/factoryengine/out
 
 COPY --from=python_build /home/factoryengine/out ./out
