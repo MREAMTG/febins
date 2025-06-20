@@ -1,7 +1,8 @@
 ARG BUILD_IMAGE=ubuntu:bionic-20210512
 ARG PLATFORM=linux/amd64
 
-FROM --platform=${PLATFORM} ${BUILD_IMAGE} AS build
+
+FROM --platform=${PLATFORM} ${BUILD_IMAGE} AS python_build
 
 ARG UID=${UID}
 ARG GID=${GID}
@@ -52,8 +53,7 @@ RUN if [ -n "${APT_CMD}" ]; then \
     libffi-dev \
     software-properties-common \
     python3-launchpadlib \
-    wget \
-    git make gawk flex bison libgmp-dev libmpfr-dev libmpc-dev binutils perl libisl-dev libzstd-dev tar gzip bzip2; \
+    wget; \
   elif [ -n "${YUM_CMD}" ]; then \
     yum groupinstall 'Development Tools' -y && yum install -y \
       gcc \
@@ -117,17 +117,41 @@ RUN tar cvf - ./bin ./include ./lib ./share ./python | gzip -9  - > "/home/facto
 
 WORKDIR /home/factoryengine
 
-
-
-
-
 #######
 # GCC #
 #######
+FROM --platform=${PLATFORM} ${BUILD_IMAGE} AS gcc_build
+
+ARG UID=${UID}
+ARG GID=${GID}
+ARG TZ="America/Toronto"
+ENV TZ=${TZ} \
+  APT_CMD="$(which apt-get)"
+
+RUN groupadd -o -g ${GID} factoryengine
+RUN useradd -o -u ${UID} -g ${GID} -s /bin/sh -d /home/factoryengine -m factoryengine
 
 ARG GCC_VERSION="15.1.0"
 ARG GCC_TAG="releases/gcc-${GCC_VERSION}"
 ENV GCC_INSTALL_DIR="/usr/local/factoryengine/gcc"
+
+RUN if [ -n "${APT_CMD}" ]; then \
+  apt-get update && apt-get install -y tzdata; \
+  fi
+
+RUN echo "${TZ}" > /etc/timezone \
+  && ln -fsn "/usr/share/zoneinfo/${TZ}" /etc/localtime \
+  && dpkg-reconfigure --frontend noninteractive tzdata
+
+
+RUN if [ -n "${APT_CMD}" ]; then \
+  apt-get install -y build-essential python3 git make gawk flex bison libgmp-dev libmpfr-dev libmpc-dev binutils perl libisl-dev libzstd-dev tar gzip bzip2 curl; \
+  fi
+
+WORKDIR /home/factoryengine
+
+RUN mkdir -p "${GCC_INSTALL_DIR}" && chown -R ${UID}:${GID} "${GCC_INSTALL_DIR}"
+USER factoryengine
 
 RUN if [ -n "${APT_CMD}" ]; then \
     git clone git://gcc.gnu.org/git/gcc.git -b ${GCC_TAG} --depth=1; \
@@ -135,8 +159,6 @@ RUN if [ -n "${APT_CMD}" ]; then \
 
 # https://gcc.gnu.org/git.html
 # https://medium.com/@xersendo/moving-to-c-26-how-to-build-and-set-up-gcc-15-1-on-ubuntu-f52cc9173fa0
-# RUN sudo apt install -y build-essential git make gawk flex bison libgmp-dev libmpfr-dev libmpc-dev python3 binutils perl libisl-dev libzstd-dev tar gzip bzip2
-# export CONFIG_SHELL=/bin/bash
 ENV CONFIG_SHELL=/bin/bash
 
 WORKDIR ./gcc
@@ -148,15 +170,6 @@ RUN if [ -n "${APT_CMD}" ]; then \
   fi
 WORKDIR ./build
 
-RUN echo "$(gcc -v)"
-RUN echo "$(uname -m)"
-
-USER root
-RUN if [ -n "${APT_CMD}" ]; then \
-  apt-get install -y python3; \
-  fi
-RUN mkdir -p "${GCC_INSTALL_DIR}" && chown -R ${UID}:${GID} "${GCC_INSTALL_DIR}"
-USER factoryengine
 
 RUN if [ -n "${APT_CMD}" ] & [ "$(uname -m)" = "x86_64" ]; then \
     export SPECIAL_FLAGS=""; \
@@ -185,13 +198,35 @@ fi && if [ -n "${APT_CMD}" ]; then \
   --enable-shared \
   --enable-threads=posix \
   --with-default-libstdcxx-abi=new \
-  --with-gcc-major-version-only ${SPECIAL_FLAGS} \
-  && make -j$(nproc) \
-  && make install; \
+  --with-gcc-major-version-only ${SPECIAL_FLAGS}; \
 fi
+RUN if [ -n "${APT_CMD}" ]; then \
+    make -j$(nproc); \
+  fi
+RUN if [ -n "${APT_CMD}" ]; then \
+    make install; \
+  fi
+
+RUN mkdir -p /home/factoryengine/out
 
 RUN if [ -n "${APT_CMD}" ]; then \
     tar cvf - ${GCC_INSTALL_DIR} | gzip -9  - > "/home/factoryengine/out/gcc-${GCC_VERSION}-$(grep '^ID=' /etc/os-release | awk -F'=' '{print $2}')_$(grep -oP '^VERSION=\"\d+.*$' /etc/os-release | sed -n 's/VERSION=\"\([0-9]*\)\..*/\1/p')_$(uname -m).tar.gz"; \
 fi
+
+WORKDIR /home/factoryengine
+
+FROM --platform=${PLATFORM} ${BUILD_IMAGE} AS build
+
+ARG UID=${UID}
+ARG GID=${GID}
+
+RUN groupadd -o -g ${GID} factoryengine
+RUN useradd -o -u ${UID} -g ${GID} -s /bin/sh -d /home/factoryengine -m factoryengine
+
+WORKDIR /home/factoryengine
+RUN mkdir -p /home/factoryengine/out
+
+COPY --from=python_build /home/factoryengine/out ./out
+COPY --from=gcc_build /home/factoryengine/out ./out
 
 WORKDIR /home/factoryengine
