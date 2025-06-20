@@ -8,8 +8,8 @@ echo "ubuntu:bionic x86_64" \
   && ./build.sh --build-arg BUILD_IMAGE=ubuntu:focal             --build-arg PLATFORM=linux/amd64 \
   && echo "ubuntu:jammy x86_64" \
   && ./build.sh --build-arg BUILD_IMAGE=ubuntu:jammy             --build-arg PLATFORM=linux/amd64 \
-  && echo "ubuntu:nobel x86_64" \
-  && ./build.sh --build-arg BUILD_IMAGE=ubuntu:nobel             --build-arg PLATFORM=linux/amd64 \
+  && echo "ubuntu:noble x86_64" \
+  && ./build.sh --build-arg BUILD_IMAGE=ubuntu:noble             --build-arg PLATFORM=linux/amd64 \
   && echo "debian:bookworm x86_64" \
   && ./build.sh --build-arg BUILD_IMAGE=debian:bookworm          --build-arg PLATFORM=linux/amd64 \
   && echo "debian:bullseye x86_64" \
@@ -20,8 +20,8 @@ echo "ubuntu:bionic x86_64" \
   && ./build.sh --build-arg BUILD_IMAGE=ubuntu:focal             --build-arg PLATFORM=linux/arm64 \
   && echo "ubuntu:jammy aarch64" \
   && ./build.sh --build-arg BUILD_IMAGE=ubuntu:jammy             --build-arg PLATFORM=linux/arm64 \
-  && echo "ubuntu:nobel aarch64" \
-  && ./build.sh --build-arg BUILD_IMAGE=ubuntu:nobel             --build-arg PLATFORM=linux/arm64 \
+  && echo "ubuntu:noble aarch64" \
+  && ./build.sh --build-arg BUILD_IMAGE=ubuntu:noble             --build-arg PLATFORM=linux/arm64 \
   && echo "debian:bookworm aarch64" \
   && ./build.sh --build-arg BUILD_IMAGE=debian:bookworm          --build-arg PLATFORM=linux/arm64 \
   && echo "debian:bullseye aarch64" \

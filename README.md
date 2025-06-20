@@ -20,7 +20,7 @@ ARG BUILD_IMAGE=bionic-20210512
 ubuntu:bionic-20210512
 ubuntu:focal
 ubuntu:jammy
-ubuntu:nobel
+ubuntu:noble
 debian:bookworm
 debian:bullseye
 ```
