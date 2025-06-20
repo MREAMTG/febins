@@ -113,7 +113,7 @@ RUN ln -s ./bin/python3 ./python
 RUN mkdir -p /home/factoryengine/out
 
 # Now, tar the 4 folders and symlink
-RUN tar cvf - ./bin ./include ./lib ./share ./python | gzip -9  - > "/home/factoryengine/out/Python-${PYTHON_VERSION}-$(grep '^ID=' /etc/os-release | awk -F'=' '{print $2}')_$(grep -oP '^VERSION="\d+.*$' /etc/os-release | sed -n 's/VERSION="\([0-9]*\)\..*/\1/p')_$(uname -m).tar.gz"
+RUN tar cvf - ./bin ./include ./lib ./share ./python | gzip -9  - > "/home/factoryengine/out/Python-${PYTHON_VERSION}-$(grep '^ID=' /etc/os-release | awk -F'=' '{print $2}')_$(grep -oP '^VERSION="\d+.*$' /etc/os-release | sed -n 's/VERSION="\([0-9]*\).*/\1/p')_$(uname -m).tar.gz"
 
 WORKDIR /home/factoryengine
 
