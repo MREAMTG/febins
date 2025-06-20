@@ -68,11 +68,22 @@ else
     SUCCESS=$?
 fi
 
-docker run --name ${DOCKER_CONTAINER_NAME} ${DOCKER_CONTAINER_NAME}
 
-docker cp ${DOCKER_CONTAINER_NAME}:/home/factoryengine/out .
+if [ $SUCCESS -eq 0 ]; then
+  echo "Building complete, copying data..."
+  set -e
+  docker run --name ${DOCKER_CONTAINER_NAME} ${DOCKER_CONTAINER_NAME}
+  set +e
 
-docker stop ${DOCKER_CONTAINER_NAME}
-docker rm ${DOCKER_CONTAINER_NAME}
+  docker cp ${DOCKER_CONTAINER_NAME}:/home/factoryengine/out .
+
+  docker stop ${DOCKER_CONTAINER_NAME}
+  docker rm ${DOCKER_CONTAINER_NAME}
+  echo "Finished"
+else
+  echo "Building Failed or canceled"
+fi
+
+
 
 exit ${SUCCESS}

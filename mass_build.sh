@@ -25,4 +25,5 @@ echo "ubuntu:bionic x86_64" \
   && echo "debian:bookworm aarch64" \
   && ./build.sh --build-arg BUILD_IMAGE=debian:bookworm          --build-arg PLATFORM=linux/arm64 \
   && echo "debian:bullseye aarch64" \
-  && ./build.sh --build-arg BUILD_IMAGE=debian:bullseye          --build-arg PLATFORM=linux/arm64
+  && ./build.sh --build-arg BUILD_IMAGE=debian:bullseye          --build-arg PLATFORM=linux/arm64 \
+  && echo "Finished mass build"
