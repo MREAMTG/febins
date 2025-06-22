@@ -215,6 +215,134 @@ fi
 
 WORKDIR /home/factoryengine
 
+
+#######
+# GDB #
+#######
+FROM --platform=${PLATFORM} ${BUILD_IMAGE} AS gdb_build
+
+ARG UID=${UID}
+ARG GID=${GID}
+ARG TZ="America/Toronto"
+ENV TZ=${TZ} \
+  APT_CMD="$(which apt-get)"
+
+RUN groupadd -o -g ${GID} factoryengine
+RUN useradd -o -u ${UID} -g ${GID} -s /bin/sh -d /home/factoryengine -m factoryengine
+
+ARG GDB_VERSION="16.3"
+ARG GDB_TAG="gdb-${GDB_VERSION}-release"
+ENV GDB_INSTALL_DIR="/usr/local/factoryengine/gdb"
+
+RUN if [ -n "${APT_CMD}" ]; then \
+  apt-get update && apt-get install -y tzdata; \
+  fi
+
+RUN echo "${TZ}" > /etc/timezone \
+  && ln -fsn "/usr/share/zoneinfo/${TZ}" /etc/localtime \
+  && dpkg-reconfigure --frontend noninteractive tzdata
+
+RUN if [ -n "${APT_CMD}" ]; then \
+  apt-get install -y git build-essential libgmp-dev libmpfr-dev texinfo bison flex; \
+  fi
+
+WORKDIR /home/factoryengine
+
+RUN mkdir -p "${GDB_INSTALL_DIR}" && chown -R ${UID}:${GID} "${GDB_INSTALL_DIR}"
+USER factoryengine
+
+RUN if [ -n "${APT_CMD}" ]; then \
+    git clone https://sourceware.org/git/binutils-gdb.git -b ${GDB_TAG} --depth=1; \
+  fi
+
+WORKDIR ./binutils-gdb
+RUN if [ -n "${APT_CMD}" ]; then \
+    mkdir build -p; \
+  fi
+WORKDIR ./build
+
+RUN if [ -n "${APT_CMD}" ]; then \
+  ../configure --prefix=${GDB_INSTALL_DIR}; \
+fi
+RUN if [ -n "${APT_CMD}" ]; then \
+    make -j$(nproc); \
+  fi
+RUN if [ -n "${APT_CMD}" ]; then \
+    make install; \
+  fi
+
+RUN mkdir -p /home/factoryengine/out
+
+RUN if [ -n "${APT_CMD}" ]; then \
+    tar cvf - ${GDB_INSTALL_DIR} | gzip -9  - > "/home/factoryengine/out/gdb-${GDB_VERSION}-$(grep '^ID=' /etc/os-release | awk -F'=' '{print $2}')_$(grep -oP '^VERSION=\"\d+.*$' /etc/os-release | sed -n 's/VERSION=\"\([0-9]*\).*/\1/p')_$(uname -m).tar.gz"; \
+fi
+
+WORKDIR /home/factoryengine
+
+
+
+############
+# Valgrind #
+############
+FROM --platform=${PLATFORM} ${BUILD_IMAGE} AS valgrind_build
+
+ARG UID=${UID}
+ARG GID=${GID}
+ARG TZ="America/Toronto"
+ENV TZ=${TZ} \
+  APT_CMD="$(which apt-get)"
+
+RUN groupadd -o -g ${GID} factoryengine
+RUN useradd -o -u ${UID} -g ${GID} -s /bin/sh -d /home/factoryengine -m factoryengine
+
+ARG VALGRIND_VERSION="3.24.0"
+ARG VALGRIND_TAG="VALGRIND_3_24_0"
+ENV VALGRIND_INSTALL_DIR="/usr/local/factoryengine/valgrind"
+
+RUN if [ -n "${APT_CMD}" ]; then \
+  apt-get update && apt-get install -y tzdata; \
+  fi
+
+RUN echo "${TZ}" > /etc/timezone \
+  && ln -fsn "/usr/share/zoneinfo/${TZ}" /etc/localtime \
+  && dpkg-reconfigure --frontend noninteractive tzdata
+
+RUN if [ -n "${APT_CMD}" ]; then \
+  apt-get install -y git build-essential tar autoconf; \
+  fi
+
+WORKDIR /home/factoryengine
+
+RUN mkdir -p "${VALGRIND_INSTALL_DIR}" && chown -R ${UID}:${GID} "${VALGRIND_INSTALL_DIR}"
+USER factoryengine
+
+RUN if [ -n "${APT_CMD}" ]; then \
+    git clone https://sourceware.org/git/valgrind.git -b ${VALGRIND_TAG} --depth=1; \
+  fi
+
+WORKDIR ./valgrind
+
+RUN if [ -n "${APT_CMD}" ]; then \
+  ./autogen.sh; \
+fi
+RUN if [ -n "${APT_CMD}" ]; then \
+  ./configure --enable-lto=yes --prefix=${VALGRIND_INSTALL_DIR}; \
+fi
+RUN if [ -n "${APT_CMD}" ]; then \
+    make -j$(nproc); \
+  fi
+RUN if [ -n "${APT_CMD}" ]; then \
+    make install; \
+  fi
+
+RUN mkdir -p /home/factoryengine/out
+
+RUN if [ -n "${APT_CMD}" ]; then \
+    tar cvf - ${VALGRIND_INSTALL_DIR} | gzip -9  - > "/home/factoryengine/out/valgrind-${VALGRIND_VERSION}-$(grep '^ID=' /etc/os-release | awk -F'=' '{print $2}')_$(grep -oP '^VERSION=\"\d+.*$' /etc/os-release | sed -n 's/VERSION=\"\([0-9]*\).*/\1/p')_$(uname -m).tar.gz"; \
+fi
+
+WORKDIR /home/factoryengine
+
 FROM --platform=${PLATFORM} ${BUILD_IMAGE} AS build
 
 ARG UID=${UID}
@@ -229,5 +357,7 @@ RUN mkdir -p /home/factoryengine/out
 
 COPY --from=python_build /home/factoryengine/out ./out
 COPY --from=gcc_build /home/factoryengine/out ./out
+COPY --from=gdb_build /home/factoryengine/out ./out
+COPY --from=valgrind_build /home/factoryengine/out ./out
 
 WORKDIR /home/factoryengine
