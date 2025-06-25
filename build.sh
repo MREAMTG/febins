@@ -4,6 +4,8 @@ set -e
 docker run --privileged --name binfmt --rm tonistiigi/binfmt --install all
 set +e
 
+DOCKER_CONTAINER_NAME="fe-bin-build"
+
 if [ -f .env ]; then
   source .env
 
@@ -46,26 +48,42 @@ if [ -f .env ]; then
   docker build \
     $build_args \
     -f ./Dockerfile \
-    -t fe-python-build \
-    --platform linux/arm64 \
+    -t ${DOCKER_CONTAINER_NAME} \
+    "$@" \
     .
     # --progress=plain \
     # --no-cache \
+    SUCCESS=$?
 else
   docker build \
     --build-arg UID=$(id -u) \
     --build-arg GID=$(id -g) \
     --build-arg TZ=$(cat /etc/timezone) \
     -f ./Dockerfile \
-    -t fe-python-build \
+    -t ${DOCKER_CONTAINER_NAME} \
+    "$@" \
     .
     # --progress=plain \
     # --no-cache \
+    SUCCESS=$?
 fi
 
-docker run --name fe-python-build fe-python-build
 
-docker cp fe-python-build:/home/factoryengine/out .
+if [ $SUCCESS -eq 0 ]; then
+  echo "Building complete, copying data..."
+  set -e
+  docker run --name ${DOCKER_CONTAINER_NAME} ${DOCKER_CONTAINER_NAME}
+  set +e
 
-docker stop fe-python-build
-docker rm fe-python-build
+  docker cp ${DOCKER_CONTAINER_NAME}:/home/factoryengine/out .
+
+  docker stop ${DOCKER_CONTAINER_NAME}
+  docker rm ${DOCKER_CONTAINER_NAME}
+  echo "Finished"
+else
+  echo "Building Failed or canceled"
+fi
+
+
+
+exit ${SUCCESS}

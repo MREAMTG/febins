@@ -1,7 +1,8 @@
 ARG BUILD_IMAGE=ubuntu:bionic-20210512
 ARG PLATFORM=linux/amd64
 
-FROM --platform=${PLATFORM} ${BUILD_IMAGE} AS build
+
+FROM --platform=${PLATFORM} ${BUILD_IMAGE} AS python_build
 
 ARG UID=${UID}
 ARG GID=${GID}
@@ -84,7 +85,7 @@ RUN if [ -n "${APT_CMD}" ]; then \
   fi
 
 # If running Ubuntu Version 20.04 or later, install the following dependencies
-RUN if [ -n "${APT_CMD}" ] && [ "$(grep '^ID=' /etc/os-release | awk -F'=' '{print $2}')" != "ubuntu" ] || [ dpkg --compare-versions "$(grep '^VERSION=' /etc/os-release | sed -n 's/VERSION="\([0-9]*\.[0-9]*\.[0-9]*\).*/\1/p')" lt '20.04' ]; then \
+RUN if [ -n "${APT_CMD}" ] && [ "$(grep '^ID=' /etc/os-release | awk -F'=' '{print $2}')" != "ubuntu" ] || [ dpkg --compare-versions "$(grep '^VERSION=' /etc/os-release | sed -n 's/VERSION=\"\([0-9]*\.[0-9]*\.[0-9]*\).*/\1/p')" lt '20.04' ]; then \
   apt-get install -y libgdbm-compat-dev; \
 fi
 
@@ -112,6 +113,251 @@ RUN ln -s ./bin/python3 ./python
 RUN mkdir -p /home/factoryengine/out
 
 # Now, tar the 4 folders and symlink
-RUN tar cvf - ./bin ./include ./lib ./share ./python | gzip -9  - > "/home/factoryengine/out/Python-${PYTHON_VERSION}-$(grep '^ID=' /etc/os-release | awk -F'=' '{print $2}')_$(grep -oP '^VERSION="\d+.*$' /etc/os-release | sed -n 's/VERSION="\([0-9]*\)\..*/\1/p')_$(uname -m).tar.gz"
+RUN tar cvf - ./bin ./include ./lib ./share ./python | gzip -9  - > "/home/factoryengine/out/Python-${PYTHON_VERSION}-$(grep '^ID=' /etc/os-release | awk -F'=' '{print $2}')_$(grep -oP '^VERSION="\d+.*$' /etc/os-release | sed -n 's/VERSION="\([0-9]*\).*/\1/p')_$(uname -m).tar.gz"
+
+WORKDIR /home/factoryengine
+
+#######
+# GCC #
+#######
+FROM --platform=${PLATFORM} ${BUILD_IMAGE} AS gcc_build
+
+ARG UID=${UID}
+ARG GID=${GID}
+ARG TZ="America/Toronto"
+ENV TZ=${TZ} \
+  APT_CMD="$(which apt-get)"
+
+RUN groupadd -o -g ${GID} factoryengine
+RUN useradd -o -u ${UID} -g ${GID} -s /bin/sh -d /home/factoryengine -m factoryengine
+
+ARG GCC_VERSION="15.1.0"
+ARG GCC_TAG="releases/gcc-${GCC_VERSION}"
+ENV GCC_INSTALL_DIR="/usr/local/factoryengine/gcc"
+
+RUN if [ -n "${APT_CMD}" ]; then \
+  apt-get update && apt-get install -y tzdata; \
+  fi
+
+RUN echo "${TZ}" > /etc/timezone \
+  && ln -fsn "/usr/share/zoneinfo/${TZ}" /etc/localtime \
+  && dpkg-reconfigure --frontend noninteractive tzdata
+
+
+RUN if [ -n "${APT_CMD}" ]; then \
+  apt-get install -y build-essential python3 git make gawk flex bison libgmp-dev libmpfr-dev libmpc-dev binutils perl libisl-dev libzstd-dev tar gzip bzip2 curl; \
+  fi
+
+WORKDIR /home/factoryengine
+
+RUN mkdir -p "${GCC_INSTALL_DIR}" && chown -R ${UID}:${GID} "${GCC_INSTALL_DIR}"
+USER factoryengine
+
+RUN if [ -n "${APT_CMD}" ]; then \
+    git clone git://gcc.gnu.org/git/gcc.git -b ${GCC_TAG} --depth=1; \
+  fi
+
+# https://gcc.gnu.org/git.html
+# https://medium.com/@xersendo/moving-to-c-26-how-to-build-and-set-up-gcc-15-1-on-ubuntu-f52cc9173fa0
+ENV CONFIG_SHELL=/bin/bash
+
+WORKDIR ./gcc
+RUN if [ -n "${APT_CMD}" ]; then \
+    ./contrib/download_prerequisites; \
+  fi
+RUN if [ -n "${APT_CMD}" ]; then \
+    mkdir build -p; \
+  fi
+WORKDIR ./build
+
+
+RUN if [ -n "${APT_CMD}" ] & [ "$(uname -m)" = "x86_64" ]; then \
+    export SPECIAL_FLAGS=""; \
+    export LOCAL_TRIPLET="x86_64"; \
+    echo "Using x85_64"; \
+else \
+    export SPECIAL_FLAGS="--enable-fix-cortex-a53-843419"; \
+    export LOCAL_TRIPLET="aarch64"; \
+    echo "Using aarch64"; \
+fi && if [ -n "${APT_CMD}" ]; then \
+  ../configure --enable-languages=c,c++,fortran --prefix=${GCC_INSTALL_DIR} --disable-multilib --disable-multi-arch \
+  --program-suffix=-15 \
+  --host=${LOCAL_TRIPLET}-linux-gnu \
+  --target=${LOCAL_TRIPLET}-linux-gnu \
+  --disable-werror \
+  --enable-checking=release \
+  --enable-clocale=gnu \
+  --enable-default-pie \
+  --enable-gnu-unique-object \
+  --enable-libphobos-checking=release \
+  --enable-libstdcxx-debug \
+  --enable-libstdcxx-time=yes \
+  --enable-linker-build-id \
+  --enable-nls \
+  --enable-plugin \
+  --enable-shared \
+  --enable-threads=posix \
+  --with-default-libstdcxx-abi=new \
+  --with-gcc-major-version-only ${SPECIAL_FLAGS}; \
+fi
+RUN if [ -n "${APT_CMD}" ]; then \
+    make -j$(nproc); \
+  fi
+RUN if [ -n "${APT_CMD}" ]; then \
+    make install; \
+  fi
+
+RUN mkdir -p /home/factoryengine/out
+
+RUN if [ -n "${APT_CMD}" ]; then \
+    tar cvf - ${GCC_INSTALL_DIR} | gzip -9  - > "/home/factoryengine/out/gcc-${GCC_VERSION}-$(grep '^ID=' /etc/os-release | awk -F'=' '{print $2}')_$(grep -oP '^VERSION=\"\d+.*$' /etc/os-release | sed -n 's/VERSION=\"\([0-9]*\).*/\1/p')_$(uname -m).tar.gz"; \
+fi
+
+WORKDIR /home/factoryengine
+
+
+#######
+# GDB #
+#######
+FROM --platform=${PLATFORM} ${BUILD_IMAGE} AS gdb_build
+
+ARG UID=${UID}
+ARG GID=${GID}
+ARG TZ="America/Toronto"
+ENV TZ=${TZ} \
+  APT_CMD="$(which apt-get)"
+
+RUN groupadd -o -g ${GID} factoryengine
+RUN useradd -o -u ${UID} -g ${GID} -s /bin/sh -d /home/factoryengine -m factoryengine
+
+ARG GDB_VERSION="16.3"
+ARG GDB_TAG="gdb-${GDB_VERSION}-release"
+ENV GDB_INSTALL_DIR="/usr/local/factoryengine/gdb"
+
+RUN if [ -n "${APT_CMD}" ]; then \
+  apt-get update && apt-get install -y tzdata; \
+  fi
+
+RUN echo "${TZ}" > /etc/timezone \
+  && ln -fsn "/usr/share/zoneinfo/${TZ}" /etc/localtime \
+  && dpkg-reconfigure --frontend noninteractive tzdata
+
+RUN if [ -n "${APT_CMD}" ]; then \
+  apt-get install -y git build-essential libgmp-dev libmpfr-dev texinfo bison flex; \
+  fi
+
+WORKDIR /home/factoryengine
+
+RUN mkdir -p "${GDB_INSTALL_DIR}" && chown -R ${UID}:${GID} "${GDB_INSTALL_DIR}"
+USER factoryengine
+
+RUN if [ -n "${APT_CMD}" ]; then \
+    git clone https://sourceware.org/git/binutils-gdb.git -b ${GDB_TAG} --depth=1; \
+  fi
+
+WORKDIR ./binutils-gdb
+RUN if [ -n "${APT_CMD}" ]; then \
+    mkdir build -p; \
+  fi
+WORKDIR ./build
+
+RUN if [ -n "${APT_CMD}" ]; then \
+  ../configure --prefix=${GDB_INSTALL_DIR}; \
+fi
+RUN if [ -n "${APT_CMD}" ]; then \
+    make -j$(nproc); \
+  fi
+RUN if [ -n "${APT_CMD}" ]; then \
+    make install; \
+  fi
+
+RUN mkdir -p /home/factoryengine/out
+
+RUN if [ -n "${APT_CMD}" ]; then \
+    tar cvf - ${GDB_INSTALL_DIR} | gzip -9  - > "/home/factoryengine/out/gdb-${GDB_VERSION}-$(grep '^ID=' /etc/os-release | awk -F'=' '{print $2}')_$(grep -oP '^VERSION=\"\d+.*$' /etc/os-release | sed -n 's/VERSION=\"\([0-9]*\).*/\1/p')_$(uname -m).tar.gz"; \
+fi
+
+WORKDIR /home/factoryengine
+
+
+
+############
+# Valgrind #
+############
+FROM --platform=${PLATFORM} ${BUILD_IMAGE} AS valgrind_build
+
+ARG UID=${UID}
+ARG GID=${GID}
+ARG TZ="America/Toronto"
+ENV TZ=${TZ} \
+  APT_CMD="$(which apt-get)"
+
+RUN groupadd -o -g ${GID} factoryengine
+RUN useradd -o -u ${UID} -g ${GID} -s /bin/sh -d /home/factoryengine -m factoryengine
+
+ARG VALGRIND_VERSION="3.24.0"
+ARG VALGRIND_TAG="VALGRIND_3_24_0"
+ENV VALGRIND_INSTALL_DIR="/usr/local/factoryengine/valgrind"
+
+RUN if [ -n "${APT_CMD}" ]; then \
+  apt-get update && apt-get install -y tzdata; \
+  fi
+
+RUN echo "${TZ}" > /etc/timezone \
+  && ln -fsn "/usr/share/zoneinfo/${TZ}" /etc/localtime \
+  && dpkg-reconfigure --frontend noninteractive tzdata
+
+RUN if [ -n "${APT_CMD}" ]; then \
+  apt-get install -y git build-essential tar autoconf; \
+  fi
+
+WORKDIR /home/factoryengine
+
+RUN mkdir -p "${VALGRIND_INSTALL_DIR}" && chown -R ${UID}:${GID} "${VALGRIND_INSTALL_DIR}"
+USER factoryengine
+
+RUN if [ -n "${APT_CMD}" ]; then \
+    git clone https://sourceware.org/git/valgrind.git -b ${VALGRIND_TAG} --depth=1; \
+  fi
+
+WORKDIR ./valgrind
+
+RUN if [ -n "${APT_CMD}" ]; then \
+  ./autogen.sh; \
+fi
+RUN if [ -n "${APT_CMD}" ]; then \
+  ./configure --enable-lto=yes --prefix=${VALGRIND_INSTALL_DIR}; \
+fi
+RUN if [ -n "${APT_CMD}" ]; then \
+    make -j$(nproc); \
+  fi
+RUN if [ -n "${APT_CMD}" ]; then \
+    make install; \
+  fi
+
+RUN mkdir -p /home/factoryengine/out
+
+RUN if [ -n "${APT_CMD}" ]; then \
+    tar cvf - ${VALGRIND_INSTALL_DIR} | gzip -9  - > "/home/factoryengine/out/valgrind-${VALGRIND_VERSION}-$(grep '^ID=' /etc/os-release | awk -F'=' '{print $2}')_$(grep -oP '^VERSION=\"\d+.*$' /etc/os-release | sed -n 's/VERSION=\"\([0-9]*\).*/\1/p')_$(uname -m).tar.gz"; \
+fi
+
+WORKDIR /home/factoryengine
+
+FROM --platform=${PLATFORM} ${BUILD_IMAGE} AS build
+
+ARG UID=${UID}
+ARG GID=${GID}
+
+RUN groupadd -o -g ${GID} factoryengine
+RUN useradd -o -u ${UID} -g ${GID} -s /bin/sh -d /home/factoryengine -m factoryengine
+
+WORKDIR /home/factoryengine
+USER factoryengine
+RUN mkdir -p /home/factoryengine/out
+
+COPY --from=python_build /home/factoryengine/out ./out
+COPY --from=gcc_build /home/factoryengine/out ./out
+COPY --from=gdb_build /home/factoryengine/out ./out
+COPY --from=valgrind_build /home/factoryengine/out ./out
 
 WORKDIR /home/factoryengine
