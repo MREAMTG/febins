@@ -174,7 +174,7 @@ WORKDIR ./build
 RUN if [ -n "${APT_CMD}" ] & [ "$(uname -m)" = "x86_64" ]; then \
     export SPECIAL_FLAGS=""; \
     export LOCAL_TRIPLET="x86_64"; \
-    echo "Using x85_64"; \
+    echo "Using x86_64"; \
 else \
     export SPECIAL_FLAGS="--enable-fix-cortex-a53-843419"; \
     export LOCAL_TRIPLET="aarch64"; \
@@ -243,7 +243,24 @@ RUN echo "${TZ}" > /etc/timezone \
   && dpkg-reconfigure --frontend noninteractive tzdata
 
 RUN if [ -n "${APT_CMD}" ]; then \
-  apt-get install -y git build-essential libgmp-dev libmpfr-dev texinfo bison flex; \
+  apt-get install -y autoconf libtool gettext bison dejagnu flex procps gobjc libexpat1-dev libncurses5-dev \
+    libreadline-dev zlib1g-dev liblzma-dev libbabeltrace-dev libxxhash-dev libmpfr-dev pkg-config python3-dev \
+    build-essential git libgmp-dev texinfo python3 libc-dbg source-highlight libsource-highlight-dev; \
+  fi
+RUN if [ -n "${APT_CMD}" ] & [ "$(grep '^ID=' /etc/os-release | awk -F'=' '{print $2}')" = "ubuntu" ] & [ dpkg --compare-versions "$(grep '^VERSION=' /etc/os-release | sed -n 's/VERSION=\"\([0-9]*\.[0-9]*\.[0-9]*\).*/\1/p')" eq '22.04' ]; then \
+  apt-get install -y libdebuginfod-dev; \
+fi
+RUN if [ -n "${APT_CMD}" ] & [ "$(grep '^ID=' /etc/os-release | awk -F'=' '{print $2}')" = "ubuntu" ] & [ dpkg --compare-versions "$(grep '^VERSION=' /etc/os-release | sed -n 's/VERSION=\"\([0-9]*\.[0-9]*\.[0-9]*\).*/\1/p')" eq '24.04' ]; then \
+  apt-get install -y libdebuginfod-dev; \
+fi
+RUN if [ -n "${APT_CMD}" ] & [ "$(grep '^ID=' /etc/os-release | awk -F'=' '{print $2}')" = "debian" ]; then \
+  apt-get install -y libdebuginfod-dev; \
+fi
+RUN if [ -n "${APT_CMD}" ] & [ "$(uname -m)" = "x86_64" ]; then \
+    echo "Using x86_64"; \
+    apt-get install -y libipt-dev; \
+  else \
+    echo "Using aarch64"; \
   fi
 
 WORKDIR /home/factoryengine
@@ -261,9 +278,46 @@ RUN if [ -n "${APT_CMD}" ]; then \
   fi
 WORKDIR ./build
 
+# RUN if [ -n "${APT_CMD}" ] && [ "$(grep '^ID=' /etc/os-release | awk -F'=' '{print $2}')" -eq "ubuntu" ] || [ dpkg --compare-versions "$(grep '^VERSION=' /etc/os-release | sed -n 's/VERSION=\"\([0-9]*\.[0-9]*\.[0-9]*\).*/\1/p')" eq '22.04' ]; then \
+#     export SPECIAL_FLAGS="--with-debuginfod"; \
+# fi && if [ -n "${APT_CMD}" ] && [ "$(grep '^ID=' /etc/os-release | awk -F'=' '{print $2}')" -eq "ubuntu" ] || [ dpkg --compare-versions "$(grep '^VERSION=' /etc/os-release | sed -n 's/VERSION=\"\([0-9]*\.[0-9]*\.[0-9]*\).*/\1/p')" eq '24.04' ]; then \
+#     export SPECIAL_FLAGS="--with-debuginfod"; \
+# fi && if [ -n "${APT_CMD}" ] && [ "$(grep '^ID=' /etc/os-release | awk -F'=' '{print $2}')" -eq "debian" ]; then \
+#     export SPECIAL_FLAGS="--with-debuginfod"; \
+# fi && if [ -n "${APT_CMD}" ] & [ "$(uname -m)" = "x86_64" ]; then \
+#     export SPECIAL_FLAGS="--with-intel-pt ${SPECIAL_FLAGS}"; \
+#     echo "Using x86_64"; \
+# else \
+#     echo "Using aarch64"; \
+# fi &&
 RUN if [ -n "${APT_CMD}" ]; then \
-  ../configure --prefix=${GDB_INSTALL_DIR}; \
+  ../configure --prefix=${GDB_INSTALL_DIR} \
+    --with-auto-load-dir=\$debugdir:\$datadir/auto-load \
+    --with-auto-load-safe-path=/usr/local/factoryengine/gcc/lib64:\$debugdir:\$datadir/auto-load ; \
 fi
+# fi && if [ -n "${APT_CMD}" ]; then \
+#   ../configure --prefix=${GDB_INSTALL_DIR} \
+#     --host=$(uname -m)-linux-gnu --target=$(uname -m)-linux-gnu \
+#     --with-auto-load-dir=\$debugdir:\$datadir/auto-load \
+#     --with-auto-load-safe-path=\$debugdir:\$datadir/auto-load \
+#     --with-expat \
+#     --with-gdb-datadir=/usr/local/factoryengine/gdb/share \
+#     --with-jit-reader-dir=/usr/local/factoryengine/gdb/lib \
+#     --without-libunwind-ia64 \
+#     --with-lzma \
+#     --with-babeltrace \
+#     --with-mpfr \
+#     --with-xxhash \
+#     --with-python=python3 \
+#     # --with-python-libdir=/usr/lib \
+#     --without-guile \
+#     --enable-source-highlight \
+#     --with-separate-debug-dir=/usr/lib/debug \
+#     --with-gmp-lib=/usr/lib/$(uname -m)-linux-gnu \
+#     --with-gmp-include=/usr/include/$(uname -m)-linux-gnu \
+#     --with-system-gdbinit=/etc/gdb/gdbinit \
+#     --with-system-gdbinit-dir=/etc/gdb/gdbinit.d ${SPECIAL_FLAGS}; \
+# fi
 RUN if [ -n "${APT_CMD}" ]; then \
     make -j$(nproc); \
   fi
@@ -308,7 +362,7 @@ RUN echo "${TZ}" > /etc/timezone \
   && dpkg-reconfigure --frontend noninteractive tzdata
 
 RUN if [ -n "${APT_CMD}" ]; then \
-  apt-get install -y git build-essential tar autoconf; \
+  apt-get install -y git build-essential tar autoconf mpi-default-dev xsltproc pkg-config libc-dbg; \
   fi
 
 WORKDIR /home/factoryengine
@@ -325,8 +379,14 @@ WORKDIR ./valgrind
 RUN if [ -n "${APT_CMD}" ]; then \
   ./autogen.sh; \
 fi
-RUN if [ -n "${APT_CMD}" ]; then \
-  ./configure --enable-lto=yes --prefix=${VALGRIND_INSTALL_DIR}; \
+RUN if [ -n "${APT_CMD}" ] & [ "$(uname -m)" = "x86_64" ]; then \
+    export SPECIAL_FLAGS=""; \
+    echo "Using x86_64"; \
+else \
+    export SPECIAL_FLAGS="--enable-only64bit"; \
+    echo "Using aarch64"; \
+fi && if [ -n "${APT_CMD}" ]; then \
+  ./configure --enable-lto=yes --enable-tls --prefix=${VALGRIND_INSTALL_DIR} ${SPECIAL_FLAGS}; \
 fi
 RUN if [ -n "${APT_CMD}" ]; then \
     make -j$(nproc); \
