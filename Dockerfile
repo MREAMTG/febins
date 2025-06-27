@@ -403,6 +403,101 @@ fi
 
 WORKDIR /home/factoryengine
 
+
+###########
+# Doxygen #
+###########
+FROM --platform=${PLATFORM} ${BUILD_IMAGE} AS doxygen_build
+
+ARG UID=${UID}
+ARG GID=${GID}
+ARG TZ="America/Toronto"
+ENV TZ=${TZ} \
+  APT_CMD="$(which apt-get)"
+
+RUN groupadd -o -g ${GID} factoryengine
+RUN useradd -o -u ${UID} -g ${GID} -s /bin/sh -d /home/factoryengine -m factoryengine
+
+ARG DOXYGEN_VERSION="1.14.0"
+ARG DOXYGEN_TAG="Release_1_14_0"
+ENV DOXYGEN_INSTALL_DIR="/usr/local/factoryengine/doxygen"
+
+RUN if [ -n "${APT_CMD}" ]; then \
+  apt-get update && apt-get install -y tzdata; \
+  fi
+
+RUN echo "${TZ}" > /etc/timezone \
+  && ln -fsn "/usr/share/zoneinfo/${TZ}" /etc/localtime \
+  && dpkg-reconfigure --frontend noninteractive tzdata
+
+RUN if [ -n "${APT_CMD}" ]; then \
+  apt-get install -y git build-essential tar cmake flex libzstd-dev bison graphviz    wget curl zip unzip     lsb-release wget software-properties-common gnupg; \
+  fi
+
+WORKDIR /home/factoryengine
+
+RUN mkdir -p "${DOXYGEN_INSTALL_DIR}" && chown -R ${UID}:${GID} "${DOXYGEN_INSTALL_DIR}"
+USER factoryengine
+
+ARG cmakeVersion='3.31.8'
+ARG cmakeMajorMinor='3.31'
+
+RUN if [ -n "${APT_CMD}" ] & [ "$(uname -m)" = "x86_64" ]; then \
+    export downloadURL="https://github.com/MREAMTG/febins/releases/download/cmake/cmake-${cmakeVersion}-linux-x86_64.tar.gz"; \
+    export downloadName="cmake-${cmakeVersion}-linux-x86_64.tar.gz"; \
+    export folderName="cmake-${cmakeVersion}-linux-x86_64"; \
+    echo "Using x86_64"; \
+else \
+    export downloadURL="https://github.com/MREAMTG/febins/releases/download/cmake/cmake-${cmakeVersion}-linux-aarch64.tar.gz"; \
+    export downloadName="cmake-${cmakeVersion}-linux-aarch64.tar.gz"; \
+    export folderName="cmake-${cmakeVersion}-linux-aarch64"; \
+    echo "Using aarch64"; \
+fi && if [ -n "${APT_CMD}" ]; then \
+    wget ${downloadURL}; \
+    tar -xzvf ./${downloadName}; \
+    mv ${folderName} cmake; \
+fi
+
+RUN if [ -n "${APT_CMD}" ]; then \
+  wget https://apt.llvm.org/llvm.sh; \
+  chmod +x llvm.sh; \
+fi
+
+USER root
+RUN if [ -n "${APT_CMD}" ]; then \
+  ./llvm.sh 17 all; \
+fi
+USER factoryengine
+
+RUN if [ -n "${APT_CMD}" ]; then \
+    git clone https://github.com/doxygen/doxygen.git -b ${DOXYGEN_TAG} --depth=1; \
+  fi
+
+WORKDIR ./doxygen
+RUN mkdir -p build
+WORKDIR ./build
+
+RUN if [ -n "${APT_CMD}" ]; then \
+  export LLVM_DIR=/usr/lib/llvm-17/cmake; \
+  export CLANG_DIR=/usr/lib/clang-17/cmake; \
+  ../../cmake/bin/cmake .. -Duse_libclang=ON -DCMAKE_INSTALL_PREFIX=${DOXYGEN_INSTALL_DIR}; \
+fi
+RUN if [ -n "${APT_CMD}" ]; then \
+    make -j$(nproc); \
+  fi
+RUN if [ -n "${APT_CMD}" ]; then \
+    make install; \
+  fi
+
+RUN mkdir -p /home/factoryengine/out
+
+RUN if [ -n "${APT_CMD}" ]; then \
+    tar cvf - ${DOXYGEN_INSTALL_DIR} | gzip -9  - > "/home/factoryengine/out/doxygen-${DOXYGEN_VERSION}-$(grep '^ID=' /etc/os-release | awk -F'=' '{print $2}')_$(grep -oP '^VERSION=\"\d+.*$' /etc/os-release | sed -n 's/VERSION=\"\([0-9]*\).*/\1/p')_$(uname -m).tar.gz"; \
+fi
+
+WORKDIR /home/factoryengine
+
+
 FROM --platform=${PLATFORM} ${BUILD_IMAGE} AS build
 
 ARG UID=${UID}
@@ -419,5 +514,6 @@ COPY --from=python_build /home/factoryengine/out ./out
 COPY --from=gcc_build /home/factoryengine/out ./out
 COPY --from=gdb_build /home/factoryengine/out ./out
 COPY --from=valgrind_build /home/factoryengine/out ./out
+COPY --from=doxygen_build /home/factoryengine/out ./out
 
 WORKDIR /home/factoryengine
