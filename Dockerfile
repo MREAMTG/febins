@@ -211,8 +211,10 @@ RUN if [ -n "${APT_CMD}" ]; then \
 
 RUN mkdir -p /home/factoryengine/out
 
+WORKDIR ${GCC_INSTALL_DIR}
+
 RUN if [ -n "${APT_CMD}" ]; then \
-    tar -C ${GCC_INSTALL_DIR} cvf - . | gzip -9  - > "/home/factoryengine/out/gcc-${GCC_VERSION}-$(grep '^ID=' /etc/os-release | awk -F'=' '{print $2}')_$(grep -oP '^VERSION=\"\d+.*$' /etc/os-release | sed -n 's/VERSION=\"\([0-9]*\).*/\1/p')_$(uname -m).tar.gz"; \
+    tar cvf - ./* | gzip -9  - > "/home/factoryengine/out/gcc-${GCC_VERSION}-$(grep '^ID=' /etc/os-release | awk -F'=' '{print $2}')_$(grep -oP '^VERSION=\"\d+.*$' /etc/os-release | sed -n 's/VERSION=\"\([0-9]*\).*/\1/p')_$(uname -m).tar.gz"; \
 fi
 
 WORKDIR /home/factoryengine
@@ -329,8 +331,10 @@ RUN if [ -n "${APT_CMD}" ]; then \
 
 RUN mkdir -p /home/factoryengine/out
 
+WORKDIR ${GDB_INSTALL_DIR}
+
 RUN if [ -n "${APT_CMD}" ]; then \
-    tar -C ${GDB_INSTALL_DIR} cvf - . | gzip -9  - > "/home/factoryengine/out/gdb-${GDB_VERSION}-$(grep '^ID=' /etc/os-release | awk -F'=' '{print $2}')_$(grep -oP '^VERSION=\"\d+.*$' /etc/os-release | sed -n 's/VERSION=\"\([0-9]*\).*/\1/p')_$(uname -m).tar.gz"; \
+    tar cvf - ./* | gzip -9  - > "/home/factoryengine/out/gdb-${GDB_VERSION}-$(grep '^ID=' /etc/os-release | awk -F'=' '{print $2}')_$(grep -oP '^VERSION=\"\d+.*$' /etc/os-release | sed -n 's/VERSION=\"\([0-9]*\).*/\1/p')_$(uname -m).tar.gz"; \
 fi
 
 WORKDIR /home/factoryengine
@@ -399,8 +403,10 @@ RUN if [ -n "${APT_CMD}" ]; then \
 
 RUN mkdir -p /home/factoryengine/out
 
+WORKDIR ${VALGRIND_INSTALL_DIR}
+
 RUN if [ -n "${APT_CMD}" ]; then \
-    tar -C ${VALGRIND_INSTALL_DIR} cvf - . | gzip -9  - > "/home/factoryengine/out/valgrind-${VALGRIND_VERSION}-$(grep '^ID=' /etc/os-release | awk -F'=' '{print $2}')_$(grep -oP '^VERSION=\"\d+.*$' /etc/os-release | sed -n 's/VERSION=\"\([0-9]*\).*/\1/p')_$(uname -m).tar.gz"; \
+    tar cvf - ./* | gzip -9  - > "/home/factoryengine/out/valgrind-${VALGRIND_VERSION}-$(grep '^ID=' /etc/os-release | awk -F'=' '{print $2}')_$(grep -oP '^VERSION=\"\d+.*$' /etc/os-release | sed -n 's/VERSION=\"\([0-9]*\).*/\1/p')_$(uname -m).tar.gz"; \
 fi
 
 WORKDIR /home/factoryengine
@@ -492,8 +498,10 @@ RUN if [ -n "${APT_CMD}" ]; then \
 
 RUN mkdir -p /home/factoryengine/out
 
+WORKDIR ${DOXYGEN_INSTALL_DIR}
+
 RUN if [ -n "${APT_CMD}" ]; then \
-    tar -C ${DOXYGEN_INSTALL_DIR} cvf - . | gzip -9  - > "/home/factoryengine/out/doxygen-${DOXYGEN_VERSION}-$(grep '^ID=' /etc/os-release | awk -F'=' '{print $2}')_$(grep -oP '^VERSION=\"\d+.*$' /etc/os-release | sed -n 's/VERSION=\"\([0-9]*\).*/\1/p')_$(uname -m).tar.gz"; \
+    tar cvf - ./* | gzip -9  - > "/home/factoryengine/out/doxygen-${DOXYGEN_VERSION}-$(grep '^ID=' /etc/os-release | awk -F'=' '{print $2}')_$(grep -oP '^VERSION=\"\d+.*$' /etc/os-release | sed -n 's/VERSION=\"\([0-9]*\).*/\1/p')_$(uname -m).tar.gz"; \
 fi
 
 WORKDIR /home/factoryengine
