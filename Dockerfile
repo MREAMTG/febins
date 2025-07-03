@@ -1,15 +1,17 @@
 ARG BUILD_IMAGE=ubuntu:bionic-20210512
 ARG PLATFORM=linux/amd64
 
-
+##########
+# Python #
+##########
 FROM --platform=${PLATFORM} ${BUILD_IMAGE} AS python_build
 
 ARG UID=${UID}
 ARG GID=${GID}
 ARG TZ="America/Toronto"
 ARG PYTHON_VERSION="3.11.9"
-ARG PYTHON_DIR="/usr/local/factoryengine/python"
-ARG PYTHON_BUILD_DIR="/usr/local/factoryengine/build"
+ARG PYTHON_DIR="/opt/FactoryEngine/python"
+ARG PYTHON_BUILD_DIR="/opt/FactoryEngine/build"
 
 ENV TZ=${TZ} \
   PYTHON_VERSION=${PYTHON_VERSION} \
@@ -133,7 +135,7 @@ RUN useradd -o -u ${UID} -g ${GID} -s /bin/sh -d /home/factoryengine -m factorye
 
 ARG GCC_VERSION="15.1.0"
 ARG GCC_TAG="releases/gcc-${GCC_VERSION}"
-ENV GCC_INSTALL_DIR="/usr/local/factoryengine/gcc"
+ENV GCC_INSTALL_DIR="/opt/FactoryEngine/gcc"
 
 RUN if [ -n "${APT_CMD}" ]; then \
   apt-get update && apt-get install -y tzdata; \
@@ -210,7 +212,7 @@ RUN if [ -n "${APT_CMD}" ]; then \
 RUN mkdir -p /home/factoryengine/out
 
 RUN if [ -n "${APT_CMD}" ]; then \
-    tar cvf - ${GCC_INSTALL_DIR} | gzip -9  - > "/home/factoryengine/out/gcc-${GCC_VERSION}-$(grep '^ID=' /etc/os-release | awk -F'=' '{print $2}')_$(grep -oP '^VERSION=\"\d+.*$' /etc/os-release | sed -n 's/VERSION=\"\([0-9]*\).*/\1/p')_$(uname -m).tar.gz"; \
+    tar -C ${GCC_INSTALL_DIR} cvf - . | gzip -9  - > "/home/factoryengine/out/gcc-${GCC_VERSION}-$(grep '^ID=' /etc/os-release | awk -F'=' '{print $2}')_$(grep -oP '^VERSION=\"\d+.*$' /etc/os-release | sed -n 's/VERSION=\"\([0-9]*\).*/\1/p')_$(uname -m).tar.gz"; \
 fi
 
 WORKDIR /home/factoryengine
@@ -232,7 +234,7 @@ RUN useradd -o -u ${UID} -g ${GID} -s /bin/sh -d /home/factoryengine -m factorye
 
 ARG GDB_VERSION="16.3"
 ARG GDB_TAG="gdb-${GDB_VERSION}-release"
-ENV GDB_INSTALL_DIR="/usr/local/factoryengine/gdb"
+ENV GDB_INSTALL_DIR="/opt/FactoryEngine/gdb"
 
 RUN if [ -n "${APT_CMD}" ]; then \
   apt-get update && apt-get install -y tzdata; \
@@ -293,7 +295,7 @@ WORKDIR ./build
 RUN if [ -n "${APT_CMD}" ]; then \
   ../configure --prefix=${GDB_INSTALL_DIR} \
     --with-auto-load-dir=\$debugdir:\$datadir/auto-load \
-    --with-auto-load-safe-path=/usr/local/factoryengine/gcc/lib64:\$debugdir:\$datadir/auto-load ; \
+    --with-auto-load-safe-path=/opt/FactoryEngine/gcc/lib64:\$debugdir:\$datadir/auto-load ; \
 fi
 # fi && if [ -n "${APT_CMD}" ]; then \
 #   ../configure --prefix=${GDB_INSTALL_DIR} \
@@ -301,8 +303,8 @@ fi
 #     --with-auto-load-dir=\$debugdir:\$datadir/auto-load \
 #     --with-auto-load-safe-path=\$debugdir:\$datadir/auto-load \
 #     --with-expat \
-#     --with-gdb-datadir=/usr/local/factoryengine/gdb/share \
-#     --with-jit-reader-dir=/usr/local/factoryengine/gdb/lib \
+#     --with-gdb-datadir=/opt/FactoryEngine/gdb/share \
+#     --with-jit-reader-dir=/opt/FactoryEngine/gdb/lib \
 #     --without-libunwind-ia64 \
 #     --with-lzma \
 #     --with-babeltrace \
@@ -328,7 +330,7 @@ RUN if [ -n "${APT_CMD}" ]; then \
 RUN mkdir -p /home/factoryengine/out
 
 RUN if [ -n "${APT_CMD}" ]; then \
-    tar cvf - ${GDB_INSTALL_DIR} | gzip -9  - > "/home/factoryengine/out/gdb-${GDB_VERSION}-$(grep '^ID=' /etc/os-release | awk -F'=' '{print $2}')_$(grep -oP '^VERSION=\"\d+.*$' /etc/os-release | sed -n 's/VERSION=\"\([0-9]*\).*/\1/p')_$(uname -m).tar.gz"; \
+    tar -C ${GDB_INSTALL_DIR} cvf - . | gzip -9  - > "/home/factoryengine/out/gdb-${GDB_VERSION}-$(grep '^ID=' /etc/os-release | awk -F'=' '{print $2}')_$(grep -oP '^VERSION=\"\d+.*$' /etc/os-release | sed -n 's/VERSION=\"\([0-9]*\).*/\1/p')_$(uname -m).tar.gz"; \
 fi
 
 WORKDIR /home/factoryengine
@@ -351,7 +353,7 @@ RUN useradd -o -u ${UID} -g ${GID} -s /bin/sh -d /home/factoryengine -m factorye
 
 ARG VALGRIND_VERSION="3.24.0"
 ARG VALGRIND_TAG="VALGRIND_3_24_0"
-ENV VALGRIND_INSTALL_DIR="/usr/local/factoryengine/valgrind"
+ENV VALGRIND_INSTALL_DIR="/opt/FactoryEngine/valgrind"
 
 RUN if [ -n "${APT_CMD}" ]; then \
   apt-get update && apt-get install -y tzdata; \
@@ -398,11 +400,10 @@ RUN if [ -n "${APT_CMD}" ]; then \
 RUN mkdir -p /home/factoryengine/out
 
 RUN if [ -n "${APT_CMD}" ]; then \
-    tar cvf - ${VALGRIND_INSTALL_DIR} | gzip -9  - > "/home/factoryengine/out/valgrind-${VALGRIND_VERSION}-$(grep '^ID=' /etc/os-release | awk -F'=' '{print $2}')_$(grep -oP '^VERSION=\"\d+.*$' /etc/os-release | sed -n 's/VERSION=\"\([0-9]*\).*/\1/p')_$(uname -m).tar.gz"; \
+    tar -C ${VALGRIND_INSTALL_DIR} cvf - . | gzip -9  - > "/home/factoryengine/out/valgrind-${VALGRIND_VERSION}-$(grep '^ID=' /etc/os-release | awk -F'=' '{print $2}')_$(grep -oP '^VERSION=\"\d+.*$' /etc/os-release | sed -n 's/VERSION=\"\([0-9]*\).*/\1/p')_$(uname -m).tar.gz"; \
 fi
 
 WORKDIR /home/factoryengine
-
 
 ###########
 # Doxygen #
@@ -420,7 +421,7 @@ RUN useradd -o -u ${UID} -g ${GID} -s /bin/sh -d /home/factoryengine -m factorye
 
 ARG DOXYGEN_VERSION="1.14.0"
 ARG DOXYGEN_TAG="Release_1_14_0"
-ENV DOXYGEN_INSTALL_DIR="/usr/local/factoryengine/doxygen"
+ENV DOXYGEN_INSTALL_DIR="/opt/FactoryEngine/doxygen"
 
 RUN if [ -n "${APT_CMD}" ]; then \
   apt-get update && apt-get install -y tzdata; \
@@ -492,12 +493,14 @@ RUN if [ -n "${APT_CMD}" ]; then \
 RUN mkdir -p /home/factoryengine/out
 
 RUN if [ -n "${APT_CMD}" ]; then \
-    tar cvf - ${DOXYGEN_INSTALL_DIR} | gzip -9  - > "/home/factoryengine/out/doxygen-${DOXYGEN_VERSION}-$(grep '^ID=' /etc/os-release | awk -F'=' '{print $2}')_$(grep -oP '^VERSION=\"\d+.*$' /etc/os-release | sed -n 's/VERSION=\"\([0-9]*\).*/\1/p')_$(uname -m).tar.gz"; \
+    tar -C ${DOXYGEN_INSTALL_DIR} cvf - . | gzip -9  - > "/home/factoryengine/out/doxygen-${DOXYGEN_VERSION}-$(grep '^ID=' /etc/os-release | awk -F'=' '{print $2}')_$(grep -oP '^VERSION=\"\d+.*$' /etc/os-release | sed -n 's/VERSION=\"\([0-9]*\).*/\1/p')_$(uname -m).tar.gz"; \
 fi
 
 WORKDIR /home/factoryengine
 
-
+#######################
+# Final Bundler Image #
+#######################
 FROM --platform=${PLATFORM} ${BUILD_IMAGE} AS build
 
 ARG UID=${UID}

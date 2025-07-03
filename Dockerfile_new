@@ -1,0 +1,464 @@
+ARG BUILD_IMAGE=ubuntu:bionic-20210512
+ARG PLATFORM=linux/amd64
+
+#######################################
+# Base Image with Common Dependencies #
+#######################################
+FROM --platform=${PLATFORM} ${BUILD_IMAGE} AS base
+
+ARG UID=${UID}
+ARG GID=${GID}
+ARG TZ="America/Toronto"
+
+ENV TZ=${TZ} \
+    DEBIAN_FRONTEND=noninteractive \
+    APT_CMD="$(which apt-get)" \
+    YUM_CMD="$(which yum)" \
+    DNF_CMD="$(which dnf)" \
+    ZYPPER_CMD="$(which zypper)" \
+    APK_CMD="$(which apk)"
+
+# Create user first (reduces layer duplication)
+RUN groupadd -o -g ${GID} factoryengine && \
+    useradd -o -u ${UID} -g ${GID} -s /bin/sh -d /home/factoryengine -m factoryengine
+
+# Install timezone data and set timezone
+RUN if [ -n "${APT_CMD}" ]; then \
+        apt-get update && apt-get install -y --no-install-recommends tzdata && \
+        rm -rf /var/lib/apt/lists/*; \
+    elif [ -n "${YUM_CMD}" ]; then \
+        yum install -y tzdata && yum clean all; \
+    elif [ -n "${DNF_CMD}" ]; then \
+        dnf install -y tzdata && dnf clean all; \
+    fi
+
+RUN echo "${TZ}" > /etc/timezone && \
+    ln -fsn "/usr/share/zoneinfo/${TZ}" /etc/localtime && \
+    if [ -n "${APT_CMD}" ]; then dpkg-reconfigure --frontend noninteractive tzdata; fi
+
+# Install common build dependencies
+RUN if [ -n "${APT_CMD}" ]; then \
+        apt-get update && apt-get install -y --no-install-recommends \
+            build-essential \
+            git \
+            wget \
+            curl \
+            tar \
+            gzip \
+            bzip2 \
+            make \
+            pkg-config \
+            ca-certificates && \
+        rm -rf /var/lib/apt/lists/*; \
+    fi
+
+##########
+# Python #
+##########
+FROM base AS python_build
+
+ARG PYTHON_VERSION="3.11.9"
+ARG PYTHON_DIR="/opt/FactoryEngine/python"
+ARG PYTHON_BUILD_DIR="/opt/FactoryEngine/build"
+
+ENV PYTHON_VERSION=${PYTHON_VERSION} \
+    PYTHON_DIR=${PYTHON_DIR} \
+    PYTHON_BUILD_DIR=${PYTHON_BUILD_DIR}
+
+# Install Python-specific dependencies
+RUN if [ -n "${APT_CMD}" ]; then \
+        apt-get update && apt-get install -y --no-install-recommends \
+            checkinstall \
+            libncursesw5-dev \
+            libssl-dev \
+            libsqlite3-dev \
+            tk-dev \
+            libgdbm-dev \
+            libc6-dev \
+            libbz2-dev \
+            libffi-dev \
+            software-properties-common \
+            python3-launchpadlib && \
+        rm -rf /var/lib/apt/lists/*; \
+    elif [ -n "${YUM_CMD}" ]; then \
+        yum groupinstall 'Development Tools' -y && yum install -y \
+            gcc \
+            ncurses-devel \
+            openssl-devel \
+            bzip2-devel \
+            libffi-devel \
+            glibc-devel \
+            sqlite-devel \
+            zlib-devel && \
+        yum clean all; \
+    elif [ -n "${DNF_CMD}" ]; then \
+        dnf groupinstall 'Development Tools' -y && dnf install -y \
+            gcc \
+            ncurses-devel \
+            openssl-devel \
+            bzip2-devel \
+            libffi-devel \
+            glibc-devel \
+            sqlite-devel \
+            zlib-devel && \
+        dnf clean all; \
+    fi
+
+# Ubuntu 20.04+ specific dependencies
+RUN if [ -n "${APT_CMD}" ] && [ "$(grep '^ID=' /etc/os-release | cut -d'=' -f2)" = "ubuntu" ]; then \
+        VERSION=$(grep '^VERSION=' /etc/os-release | sed -n 's/VERSION="\([0-9]*\.[0-9]*\).*/\1/p'); \
+        if [ "$(printf '%s\n' "20.04" "$VERSION" | sort -V | head -n1)" = "20.04" ]; then \
+            apt-get update && apt-get install -y --no-install-recommends libgdbm-compat-dev && \
+            rm -rf /var/lib/apt/lists/*; \
+        fi; \
+    fi
+
+# Create directories with proper permissions
+RUN mkdir -p "${PYTHON_BUILD_DIR}" "${PYTHON_DIR}" && \
+    chown -R ${UID}:${GID} "${PYTHON_BUILD_DIR}" "${PYTHON_DIR}"
+
+USER factoryengine
+WORKDIR ${PYTHON_BUILD_DIR}
+
+# Download and build Python
+RUN wget -q "https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz" && \
+    tar -xzf "Python-${PYTHON_VERSION}.tgz" -C "${PYTHON_BUILD_DIR}" --strip-components=1 && \
+    rm "Python-${PYTHON_VERSION}.tgz"
+
+RUN ./configure --prefix="${PYTHON_DIR}" --enable-shared --enable-optimizations && \
+    make -j$(nproc) && \
+    make install
+
+WORKDIR ${PYTHON_DIR}
+
+# Create symlink and output directory
+RUN ln -s ./bin/python3 ./python && \
+    mkdir -p /home/factoryengine/out
+
+# Create tarball with better compression
+RUN tar -cf - ./bin ./include ./lib ./share ./python | \
+    gzip -9 > "/home/factoryengine/out/Python-${PYTHON_VERSION}-$(grep '^ID=' /etc/os-release | cut -d'=' -f2)_$(grep '^VERSION=' /etc/os-release | sed -n 's/VERSION=\"\([0-9]*\).*/\1/p\')_$(uname -m).tar.gz"
+
+WORKDIR /home/factoryengine
+
+#######
+# GCC #
+#######
+FROM base AS gcc_build
+
+ARG GCC_VERSION="15.1.0"
+ARG GCC_TAG="releases/gcc-${GCC_VERSION}"
+ENV GCC_INSTALL_DIR="/opt/FactoryEngine/gcc"
+
+# Install GCC-specific dependencies
+RUN if [ -n "${APT_CMD}" ]; then \
+        apt-get update && apt-get install -y --no-install-recommends \
+            python3 \
+            gawk \
+            flex \
+            bison \
+            libgmp-dev \
+            libmpfr-dev \
+            libmpc-dev \
+            binutils \
+            perl \
+            libisl-dev \
+            libzstd-dev && \
+        rm -rf /var/lib/apt/lists/*; \
+    fi
+
+RUN mkdir -p "${GCC_INSTALL_DIR}" && chown -R ${UID}:${GID} "${GCC_INSTALL_DIR}"
+
+USER factoryengine
+WORKDIR /home/factoryengine
+
+# Clone GCC repository
+RUN git clone --depth=1 --branch ${GCC_TAG} git://gcc.gnu.org/git/gcc.git gcc
+
+ENV CONFIG_SHELL=/bin/bash
+WORKDIR ./gcc
+
+RUN ./contrib/download_prerequisites && \
+    mkdir -p build
+
+WORKDIR ./build
+
+# Configure based on architecture
+RUN ARCH=$(uname -m) && \
+    if [ "$ARCH" = "x86_64" ]; then \
+        SPECIAL_FLAGS=""; \
+        LOCAL_TRIPLET="x86_64"; \
+    else \
+        SPECIAL_FLAGS="--enable-fix-cortex-a53-843419"; \
+        LOCAL_TRIPLET="aarch64"; \
+    fi && \
+    ../configure \
+        --enable-languages=c,c++,fortran \
+        --prefix=${GCC_INSTALL_DIR} \
+        --disable-multilib \
+        --disable-multi-arch \
+        --program-suffix=-15 \
+        --host=${LOCAL_TRIPLET}-linux-gnu \
+        --target=${LOCAL_TRIPLET}-linux-gnu \
+        --disable-werror \
+        --enable-checking=release \
+        --enable-clocale=gnu \
+        --enable-default-pie \
+        --enable-gnu-unique-object \
+        --enable-libphobos-checking=release \
+        --enable-libstdcxx-debug \
+        --enable-libstdcxx-time=yes \
+        --enable-linker-build-id \
+        --enable-nls \
+        --enable-plugin \
+        --enable-shared \
+        --enable-threads=posix \
+        --with-default-libstdcxx-abi=new \
+        --with-gcc-major-version-only \
+        ${SPECIAL_FLAGS}
+
+RUN make -j$(nproc) && make install
+
+RUN mkdir -p /home/factoryengine/out && \
+    tar -C ${GCC_INSTALL_DIR} -cf - . | \
+    gzip -9 > "/home/factoryengine/out/gcc-${GCC_VERSION}-$(grep '^ID=' /etc/os-release | cut -d'=' -f2)_$(grep '^VERSION=' /etc/os-release | sed -n 's/VERSION=\"\([0-9]*\).*/\1/p')_$(uname -m).tar.gz"
+
+WORKDIR /home/factoryengine
+
+#######
+# GDB #
+#######
+FROM base AS gdb_build
+
+ARG GDB_VERSION="16.3"
+ARG GDB_TAG="gdb-${GDB_VERSION}-release"
+ENV GDB_INSTALL_DIR="/opt/FactoryEngine/gdb"
+
+# Install GDB-specific dependencies
+RUN if [ -n "${APT_CMD}" ]; then \
+        apt-get update && apt-get install -y --no-install-recommends \
+            autoconf \
+            libtool \
+            gettext \
+            bison \
+            dejagnu \
+            flex \
+            procps \
+            gobjc \
+            libexpat1-dev \
+            libncurses5-dev \
+            libreadline-dev \
+            zlib1g-dev \
+            liblzma-dev \
+            libbabeltrace-dev \
+            libxxhash-dev \
+            libmpfr-dev \
+            python3-dev \
+            libgmp-dev \
+            texinfo \
+            python3 \
+            libc-dbg \
+            source-highlight \
+            libsource-highlight-dev && \
+        rm -rf /var/lib/apt/lists/*; \
+    fi
+
+# Install optional dependencies based on distro/version
+RUN if [ -n "${APT_CMD}" ]; then \
+        DISTRO=$(grep '^ID=' /etc/os-release | cut -d'=' -f2); \
+        if [ "$DISTRO" = "ubuntu" ]; then \
+            VERSION=$(grep '^VERSION=' /etc/os-release | sed -n 's/VERSION="\([0-9]*\.[0-9]*\).*/\1/p'); \
+            if [ "$VERSION" = "22.04" ] || [ "$VERSION" = "24.04" ]; then \
+                apt-get update && apt-get install -y --no-install-recommends libdebuginfod-dev && \
+                rm -rf /var/lib/apt/lists/*; \
+            fi; \
+        elif [ "$DISTRO" = "debian" ]; then \
+            apt-get update && apt-get install -y --no-install-recommends libdebuginfod-dev && \
+            rm -rf /var/lib/apt/lists/*; \
+        fi; \
+        if [ "$(uname -m)" = "x86_64" ]; then \
+            apt-get update && apt-get install -y --no-install-recommends libipt-dev && \
+            rm -rf /var/lib/apt/lists/*; \
+        fi; \
+    fi
+
+RUN mkdir -p "${GDB_INSTALL_DIR}" && chown -R ${UID}:${GID} "${GDB_INSTALL_DIR}"
+
+USER factoryengine
+WORKDIR /home/factoryengine
+
+RUN git clone --depth=1 --branch ${GDB_TAG} https://sourceware.org/git/binutils-gdb.git binutils-gdb
+
+WORKDIR ./binutils-gdb
+RUN mkdir -p build
+
+WORKDIR ./build
+
+RUN ../configure \
+        --prefix=${GDB_INSTALL_DIR} \
+        --with-auto-load-dir=\$debugdir:\$datadir/auto-load \
+        --with-auto-load-safe-path=/opt/FactoryEngine/gcc/lib64:\$debugdir:\$datadir/auto-load
+
+RUN make -j$(nproc) && make install
+
+RUN mkdir -p /home/factoryengine/out && \
+    tar -C ${GDB_INSTALL_DIR} -cf - . | \
+    gzip -9 > "/home/factoryengine/out/gdb-${GDB_VERSION}-$(grep '^ID=' /etc/os-release | cut -d'=' -f2)_$(grep '^VERSION=' /etc/os-release | sed -n 's/VERSION=\"\([0-9]*\).*/\1/p')_$(uname -m).tar.gz"
+
+WORKDIR /home/factoryengine
+
+############
+# Valgrind #
+############
+FROM base AS valgrind_build
+
+ARG VALGRIND_VERSION="3.24.0"
+ARG VALGRIND_TAG="VALGRIND_3_24_0"
+ENV VALGRIND_INSTALL_DIR="/opt/FactoryEngine/valgrind"
+
+# Install Valgrind-specific dependencies
+RUN if [ -n "${APT_CMD}" ]; then \
+        apt-get update && apt-get install -y --no-install-recommends \
+            autoconf \
+            mpi-default-dev \
+            xsltproc \
+            libc-dbg && \
+        rm -rf /var/lib/apt/lists/*; \
+    fi
+
+RUN mkdir -p "${VALGRIND_INSTALL_DIR}" && chown -R ${UID}:${GID} "${VALGRIND_INSTALL_DIR}"
+
+USER factoryengine
+WORKDIR /home/factoryengine
+
+RUN git clone --depth=1 --branch ${VALGRIND_TAG} https://sourceware.org/git/valgrind.git valgrind
+
+WORKDIR ./valgrind
+
+RUN ./autogen.sh
+
+RUN ARCH=$(uname -m) && \
+    if [ "$ARCH" = "x86_64" ]; then \
+        SPECIAL_FLAGS=""; \
+    else \
+        SPECIAL_FLAGS="--enable-only64bit"; \
+    fi && \
+    ./configure \
+        --enable-lto=yes \
+        --enable-tls \
+        --prefix=${VALGRIND_INSTALL_DIR} \
+        ${SPECIAL_FLAGS}
+
+RUN make -j$(nproc) && make install
+
+RUN mkdir -p /home/factoryengine/out && \
+    tar -C ${VALGRIND_INSTALL_DIR} -cf - . | \
+    gzip -9 > "/home/factoryengine/out/valgrind-${VALGRIND_VERSION}-$(grep '^ID=' /etc/os-release | cut -d'=' -f2)_$(grep '^VERSION=' /etc/os-release | sed -n 's/VERSION=\"\([0-9]*\).*/\1/p')_$(uname -m).tar.gz"
+
+WORKDIR /home/factoryengine
+
+###########
+# Doxygen #
+###########
+FROM base AS doxygen_build
+
+ARG DOXYGEN_VERSION="1.14.0"
+ARG DOXYGEN_TAG="Release_1_14_0"
+ENV DOXYGEN_INSTALL_DIR="/opt/FactoryEngine/doxygen"
+
+# Install Doxygen-specific dependencies
+RUN if [ -n "${APT_CMD}" ]; then \
+        apt-get update && apt-get install -y --no-install-recommends \
+            cmake \
+            flex \
+            libzstd-dev \
+            bison \
+            graphviz \
+            zip \
+            unzip \
+            lsb-release \
+            software-properties-common \
+            gnupg && \
+        rm -rf /var/lib/apt/lists/*; \
+    fi
+
+RUN mkdir -p "${DOXYGEN_INSTALL_DIR}" && chown -R ${UID}:${GID} "${DOXYGEN_INSTALL_DIR}"
+
+USER factoryengine
+WORKDIR /home/factoryengine
+
+# Download and install newer CMake
+ARG cmakeVersion='3.31.8'
+RUN ARCH=$(uname -m) && \
+    if [ "$ARCH" = "x86_64" ]; then \
+        CMAKE_ARCH="x86_64"; \
+    else \
+        CMAKE_ARCH="aarch64"; \
+    fi && \
+    wget -q "https://github.com/MREAMTG/febins/releases/download/cmake/cmake-${cmakeVersion}-linux-${CMAKE_ARCH}.tar.gz" && \
+    tar -xzf "cmake-${cmakeVersion}-linux-${CMAKE_ARCH}.tar.gz" && \
+    mv "cmake-${cmakeVersion}-linux-${CMAKE_ARCH}" cmake && \
+    rm "cmake-${cmakeVersion}-linux-${CMAKE_ARCH}.tar.gz"
+
+# Install LLVM
+RUN wget -q https://apt.llvm.org/llvm.sh && chmod +x llvm.sh
+
+USER root
+RUN ./llvm.sh 17 all
+
+USER factoryengine
+
+# Clone and build Doxygen
+RUN git clone --depth=1 --branch ${DOXYGEN_TAG} https://github.com/doxygen/doxygen.git doxygen
+
+WORKDIR ./doxygen
+RUN mkdir -p build
+
+WORKDIR ./build
+
+RUN export LLVM_DIR=/usr/lib/llvm-17/cmake && \
+    export CLANG_DIR=/usr/lib/clang-17/cmake && \
+    ../../cmake/bin/cmake .. \
+        -Duse_libclang=ON \
+        -DCMAKE_INSTALL_PREFIX=${DOXYGEN_INSTALL_DIR} \
+        -DCMAKE_BUILD_TYPE=Release
+
+RUN make -j$(nproc) && make install
+
+RUN mkdir -p /home/factoryengine/out && \
+    tar -C ${DOXYGEN_INSTALL_DIR} -cf - . | \
+    gzip -9 > "/home/factoryengine/out/doxygen-${DOXYGEN_VERSION}-$(grep '^ID=' /etc/os-release | cut -d'=' -f2)_$(grep '^VERSION=' /etc/os-release | sed -n 's/VERSION=\"\([0-9]*\).*/\1/p')_$(uname -m).tar.gz"
+
+WORKDIR /home/factoryengine
+
+#######################
+# Final Bundler Image #
+#######################
+FROM --platform=${PLATFORM} ${BUILD_IMAGE} AS build
+
+ARG UID=${UID}
+ARG GID=${GID}
+
+RUN groupadd -o -g ${GID} factoryengine && \
+    useradd -o -u ${UID} -g ${GID} -s /bin/sh -d /home/factoryengine -m factoryengine
+
+USER factoryengine
+WORKDIR /home/factoryengine
+
+RUN mkdir -p /home/factoryengine/out
+
+# Copy all build artifacts
+COPY --from=python_build /home/factoryengine/out/ ./out/
+COPY --from=gcc_build /home/factoryengine/out/ ./out/
+COPY --from=gdb_build /home/factoryengine/out/ ./out/
+COPY --from=valgrind_build /home/factoryengine/out/ ./out/
+COPY --from=doxygen_build /home/factoryengine/out/ ./out/
+
+# Add a manifest file for easier identification
+RUN echo "Built on: $(date)" > ./out/build_manifest.txt && \
+    echo "Platform: $(uname -m)" >> ./out/build_manifest.txt && \
+    echo "OS: $(grep '^ID=' /etc/os-release | cut -d'=' -f2)" >> ./out/build_manifest.txt && \
+    echo "Files:" >> ./out/build_manifest.txt && \
+    ls -la ./out/*.tar.gz >> ./out/build_manifest.txt
+
+WORKDIR /home/factoryengine

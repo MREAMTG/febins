@@ -1,10 +1,33 @@
 #!/bin/env bash
 
 set -e
-docker run --privileged --name binfmt --rm tonistiigi/binfmt --install all
-set +e
 
-DOCKER_CONTAINER_NAME="fe-bin-build"
+# Parse build-id argument for unique container names
+BUILD_ID=""
+ARGS=()
+
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --build-id)
+      BUILD_ID="$2"
+      shift 2
+      ;;
+    *)
+      ARGS+=("$1")
+      shift
+      ;;
+  esac
+done
+
+# Set unique container names
+BINFMT_CONTAINER_NAME="binfmt${BUILD_ID:+_$BUILD_ID}"
+DOCKER_CONTAINER_NAME="fe-bin-build${BUILD_ID:+_$BUILD_ID}"
+
+echo "Using container names: $BINFMT_CONTAINER_NAME, $DOCKER_CONTAINER_NAME"
+
+# Run binfmt with unique name
+docker run --privileged --name "$BINFMT_CONTAINER_NAME" --rm tonistiigi/binfmt --install all
+set +e
 
 if [ -f .env ]; then
   source .env
@@ -49,7 +72,7 @@ if [ -f .env ]; then
     $build_args \
     -f ./Dockerfile \
     -t ${DOCKER_CONTAINER_NAME} \
-    "$@" \
+    "${ARGS[@]}" \
     .
     # --progress=plain \
     # --no-cache \
@@ -61,7 +84,7 @@ else
     --build-arg TZ=$(cat /etc/timezone) \
     -f ./Dockerfile \
     -t ${DOCKER_CONTAINER_NAME} \
-    "$@" \
+    "${ARGS[@]}" \
     .
     # --progress=plain \
     # --no-cache \
@@ -75,15 +98,15 @@ if [ $SUCCESS -eq 0 ]; then
   docker run --name ${DOCKER_CONTAINER_NAME} ${DOCKER_CONTAINER_NAME}
   set +e
 
-  docker cp ${DOCKER_CONTAINER_NAME}:/home/factoryengine/out .
+  # Create unique output directory
+  OUT_DIR="out${BUILD_ID:+_$BUILD_ID}"
+  docker cp ${DOCKER_CONTAINER_NAME}:/home/factoryengine/out "$OUT_DIR"
 
   docker stop ${DOCKER_CONTAINER_NAME}
   docker rm ${DOCKER_CONTAINER_NAME}
-  echo "Finished"
+  echo "Finished - output in $OUT_DIR"
 else
   echo "Building Failed or canceled"
 fi
-
-
 
 exit ${SUCCESS}
