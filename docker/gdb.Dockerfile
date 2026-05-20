@@ -64,9 +64,18 @@ RUN if [ -n "${APT_CMD}" ]; then \
 WORKDIR /home/factoryengine/binutils-gdb/build
 
 RUN if [ -n "${APT_CMD}" ]; then \
-  ../configure --prefix=${FE_DIR}/gdb \
-    --with-auto-load-dir=\$debugdir:\$datadir/auto-load \
-    --with-auto-load-safe-path=/opt/FactoryEngine/gcc/lib64:\$debugdir:\$datadir/auto-load ; \
+  # If Ubuntu v26, we need a special flag to avoid a build failure due to a change in the default behavior of auto-load directories. See https://bugs.launchpad.net/ubuntu/+source/gdb/+bug/2004418 for more details. \
+  if [ -f /etc/os-release ] && grep -q "Ubuntu" /etc/os-release && grep -q "26" /etc/os-release; then \
+    echo "Ubuntu 26 detected, adding --with-auto-load-safe-path=/opt/FactoryEngine/gcc/lib64 to configure options"; \
+    ../configure --prefix=${FE_DIR}/gdb \
+      --disable-gprofng \
+      --with-auto-load-dir=\$debugdir:\$datadir/auto-load \
+      --with-auto-load-safe-path=/opt/FactoryEngine/gcc/lib64:\$debugdir:\$datadir/auto-load; \
+  else \
+    ../configure --prefix=${FE_DIR}/gdb \
+      --with-auto-load-dir=\$debugdir:\$datadir/auto-load \
+      --with-auto-load-safe-path=/opt/FactoryEngine/gcc/lib64:\$debugdir:\$datadir/auto-load ; \
+    fi; \
 fi
 RUN if [ -n "${APT_CMD}" ]; then \
     make -j$(nproc); \
