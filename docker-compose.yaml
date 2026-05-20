@@ -1,0 +1,2215 @@
+services:
+    ##########
+    # Python #
+    ##########
+    python-ubuntu-bionic-amd64:
+        build:
+            context: .
+            dockerfile: ./docker/python.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:bionic
+                - PLATFORM=linux/amd64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/amd64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    python-ubuntu-bionic-arm64:
+        build:
+            context: .
+            dockerfile: ./docker/python.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:bionic
+                - PLATFORM=linux/arm64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/arm64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    python-ubuntu-focal-amd64:
+        build:
+            context: .
+            dockerfile: ./docker/python.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:focal
+                - PLATFORM=linux/amd64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/amd64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    python-ubuntu-focal-arm64:
+        build:
+            context: .
+            dockerfile: ./docker/python.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:focal
+                - PLATFORM=linux/arm64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/arm64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    python-ubuntu-jammy-amd64:
+        build:
+            context: .
+            dockerfile: ./docker/python.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:jammy
+                - PLATFORM=linux/amd64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/amd64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    python-ubuntu-jammy-arm64:
+        build:
+            context: .
+            dockerfile: ./docker/python.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:jammy
+                - PLATFORM=linux/arm64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/arm64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    python-ubuntu-noble-amd64:
+        build:
+            context: .
+            dockerfile: ./docker/python.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:noble
+                - PLATFORM=linux/amd64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/amd64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    python-ubuntu-noble-arm64:
+        build:
+            context: .
+            dockerfile: ./docker/python.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:noble
+                - PLATFORM=linux/arm64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/arm64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    python-ubuntu-plucky-amd64:
+        build:
+            context: .
+            dockerfile: ./docker/python.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:plucky
+                - PLATFORM=linux/amd64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/amd64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    python-ubuntu-plucky-arm64:
+        build:
+            context: .
+            dockerfile: ./docker/python.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:plucky
+                - PLATFORM=linux/arm64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/arm64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    python-ubuntu-questing-amd64:
+        build:
+            context: .
+            dockerfile: ./docker/python.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:questing
+                - PLATFORM=linux/amd64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/amd64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    python-ubuntu-questing-arm64:
+        build:
+            context: .
+            dockerfile: ./docker/python.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:questing
+                - PLATFORM=linux/arm64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/arm64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    python-ubuntu-resolute-amd64:
+        build:
+            context: .
+            dockerfile: ./docker/python.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:resolute
+                - PLATFORM=linux/amd64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/amd64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    python-ubuntu-resolute-arm64:
+        build:
+            context: .
+            dockerfile: ./docker/python.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:resolute
+                - PLATFORM=linux/arm64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/arm64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    python-debian-bullseye-amd64:
+        build:
+            context: .
+            dockerfile: ./docker/python.Dockerfile
+            args:
+                - BUILD_IMAGE=debian:bullseye
+                - PLATFORM=linux/amd64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/amd64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    python-debian-bullseye-arm64:
+        build:
+            context: .
+            dockerfile: ./docker/python.Dockerfile
+            args:
+                - BUILD_IMAGE=debian:bullseye
+                - PLATFORM=linux/arm64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/arm64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    python-debian-bookworm-amd64:
+        build:
+            context: .
+            dockerfile: ./docker/python.Dockerfile
+            args:
+                - BUILD_IMAGE=debian:bookworm
+                - PLATFORM=linux/amd64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/amd64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    python-debian-bookworm-arm64:
+        build:
+            context: .
+            dockerfile: ./docker/python.Dockerfile
+            args:
+                - BUILD_IMAGE=debian:bookworm
+                - PLATFORM=linux/arm64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/arm64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    python-debian-trixie-amd64:
+        build:
+            context: .
+            dockerfile: ./docker/python.Dockerfile
+            args:
+                - BUILD_IMAGE=debian:trixie
+                - PLATFORM=linux/amd64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/amd64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    python-debian-trixie-arm64:
+        build:
+            context: .
+            dockerfile: ./docker/python.Dockerfile
+            args:
+                - BUILD_IMAGE=debian:trixie
+                - PLATFORM=linux/arm64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/arm64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    #######
+    # GCC #
+    #######
+    gcc-ubuntu-bionic-amd64:
+        build:
+            context: .
+            dockerfile: ./docker/gcc.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:bionic
+                - PLATFORM=linux/amd64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/amd64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    gcc-ubuntu-bionic-arm64:
+        build:
+            context: .
+            dockerfile: ./docker/gcc.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:bionic
+                - PLATFORM=linux/arm64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/arm64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    gcc-ubuntu-focal-amd64:
+        build:
+            context: .
+            dockerfile: ./docker/gcc.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:focal
+                - PLATFORM=linux/amd64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/amd64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    gcc-ubuntu-focal-arm64:
+        build:
+            context: .
+            dockerfile: ./docker/gcc.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:focal
+                - PLATFORM=linux/arm64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/arm64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    gcc-ubuntu-jammy-amd64:
+        build:
+            context: .
+            dockerfile: ./docker/gcc.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:jammy
+                - PLATFORM=linux/amd64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/amd64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    gcc-ubuntu-jammy-arm64:
+        build:
+            context: .
+            dockerfile: ./docker/gcc.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:jammy
+                - PLATFORM=linux/arm64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/arm64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    gcc-ubuntu-noble-amd64:
+        build:
+            context: .
+            dockerfile: ./docker/gcc.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:noble
+                - PLATFORM=linux/amd64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/amd64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    gcc-ubuntu-noble-arm64:
+        build:
+            context: .
+            dockerfile: ./docker/gcc.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:noble
+                - PLATFORM=linux/arm64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/arm64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    gcc-ubuntu-plucky-amd64:
+        build:
+            context: .
+            dockerfile: ./docker/gcc.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:plucky
+                - PLATFORM=linux/amd64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/amd64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    gcc-ubuntu-plucky-arm64:
+        build:
+            context: .
+            dockerfile: ./docker/gcc.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:plucky
+                - PLATFORM=linux/arm64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/arm64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    gcc-ubuntu-questing-amd64:
+        build:
+            context: .
+            dockerfile: ./docker/gcc.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:questing
+                - PLATFORM=linux/amd64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/amd64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    gcc-ubuntu-questing-arm64:
+        build:
+            context: .
+            dockerfile: ./docker/gcc.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:questing
+                - PLATFORM=linux/arm64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/arm64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    gcc-ubuntu-resolute-amd64:
+        build:
+            context: .
+            dockerfile: ./docker/gcc.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:resolute
+                - PLATFORM=linux/amd64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/amd64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    gcc-ubuntu-resolute-arm64:
+        build:
+            context: .
+            dockerfile: ./docker/gcc.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:resolute
+                - PLATFORM=linux/arm64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/arm64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    gcc-debian-bullseye-amd64:
+        build:
+            context: .
+            dockerfile: ./docker/gcc.Dockerfile
+            args:
+                - BUILD_IMAGE=debian:bullseye
+                - PLATFORM=linux/amd64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/amd64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    gcc-debian-bullseye-arm64:
+        build:
+            context: .
+            dockerfile: ./docker/gcc.Dockerfile
+            args:
+                - BUILD_IMAGE=debian:bullseye
+                - PLATFORM=linux/arm64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/arm64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    gcc-debian-bookworm-amd64:
+        build:
+            context: .
+            dockerfile: ./docker/gcc.Dockerfile
+            args:
+                - BUILD_IMAGE=debian:bookworm
+                - PLATFORM=linux/amd64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/amd64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    gcc-debian-bookworm-arm64:
+        build:
+            context: .
+            dockerfile: ./docker/gcc.Dockerfile
+            args:
+                - BUILD_IMAGE=debian:bookworm
+                - PLATFORM=linux/arm64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/arm64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    gcc-debian-trixie-amd64:
+        build:
+            context: .
+            dockerfile: ./docker/gcc.Dockerfile
+            args:
+                - BUILD_IMAGE=debian:trixie
+                - PLATFORM=linux/amd64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/amd64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    gcc-debian-trixie-arm64:
+        build:
+            context: .
+            dockerfile: ./docker/gcc.Dockerfile
+            args:
+                - BUILD_IMAGE=debian:trixie
+                - PLATFORM=linux/arm64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/arm64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    #######
+    # GDB #
+    #######
+    gdb-ubuntu-bionic-amd64:
+        build:
+            context: .
+            dockerfile: ./docker/gdb.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:bionic
+                - PLATFORM=linux/amd64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/amd64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    gdb-ubuntu-bionic-arm64:
+        build:
+            context: .
+            dockerfile: ./docker/gdb.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:bionic
+                - PLATFORM=linux/arm64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/arm64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    gdb-ubuntu-focal-amd64:
+        build:
+            context: .
+            dockerfile: ./docker/gdb.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:focal
+                - PLATFORM=linux/amd64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/amd64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    gdb-ubuntu-focal-arm64:
+        build:
+            context: .
+            dockerfile: ./docker/gdb.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:focal
+                - PLATFORM=linux/arm64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/arm64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    gdb-ubuntu-jammy-amd64:
+        build:
+            context: .
+            dockerfile: ./docker/gdb.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:jammy
+                - PLATFORM=linux/amd64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/amd64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    gdb-ubuntu-jammy-arm64:
+        build:
+            context: .
+            dockerfile: ./docker/gdb.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:jammy
+                - PLATFORM=linux/arm64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/arm64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    gdb-ubuntu-noble-amd64:
+        build:
+            context: .
+            dockerfile: ./docker/gdb.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:noble
+                - PLATFORM=linux/amd64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/amd64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    gdb-ubuntu-noble-arm64:
+        build:
+            context: .
+            dockerfile: ./docker/gdb.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:noble
+                - PLATFORM=linux/arm64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/arm64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    gdb-ubuntu-plucky-amd64:
+        build:
+            context: .
+            dockerfile: ./docker/gdb.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:plucky
+                - PLATFORM=linux/amd64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/amd64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    gdb-ubuntu-plucky-arm64:
+        build:
+            context: .
+            dockerfile: ./docker/gdb.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:plucky
+                - PLATFORM=linux/arm64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/arm64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    gdb-ubuntu-questing-amd64:
+        build:
+            context: .
+            dockerfile: ./docker/gdb.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:questing
+                - PLATFORM=linux/amd64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/amd64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    gdb-ubuntu-questing-arm64:
+        build:
+            context: .
+            dockerfile: ./docker/gdb.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:questing
+                - PLATFORM=linux/arm64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/arm64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    gdb-ubuntu-resolute-amd64:
+        build:
+            context: .
+            dockerfile: ./docker/gdb.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:resolute
+                - PLATFORM=linux/amd64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/amd64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    gdb-ubuntu-resolute-arm64:
+        build:
+            context: .
+            dockerfile: ./docker/gdb.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:resolute
+                - PLATFORM=linux/arm64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/arm64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    gdb-debian-bullseye-amd64:
+        build:
+            context: .
+            dockerfile: ./docker/gdb.Dockerfile
+            args:
+                - BUILD_IMAGE=debian:bullseye
+                - PLATFORM=linux/amd64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/amd64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    gdb-debian-bullseye-arm64:
+        build:
+            context: .
+            dockerfile: ./docker/gdb.Dockerfile
+            args:
+                - BUILD_IMAGE=debian:bullseye
+                - PLATFORM=linux/arm64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/arm64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    gdb-debian-bookworm-amd64:
+        build:
+            context: .
+            dockerfile: ./docker/gdb.Dockerfile
+            args:
+                - BUILD_IMAGE=debian:bookworm
+                - PLATFORM=linux/amd64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/amd64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    gdb-debian-bookworm-arm64:
+        build:
+            context: .
+            dockerfile: ./docker/gdb.Dockerfile
+            args:
+                - BUILD_IMAGE=debian:bookworm
+                - PLATFORM=linux/arm64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/arm64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    gdb-debian-trixie-amd64:
+        build:
+            context: .
+            dockerfile: ./docker/gdb.Dockerfile
+            args:
+                - BUILD_IMAGE=debian:trixie
+                - PLATFORM=linux/amd64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/amd64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    gdb-debian-trixie-arm64:
+        build:
+            context: .
+            dockerfile: ./docker/gdb.Dockerfile
+            args:
+                - BUILD_IMAGE=debian:trixie
+                - PLATFORM=linux/arm64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/arm64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    ############
+    # Valgrind #
+    ############
+    valgrind-ubuntu-bionic-amd64:
+        build:
+            context: .
+            dockerfile: ./docker/valgrind.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:bionic
+                - PLATFORM=linux/amd64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/amd64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    valgrind-ubuntu-bionic-arm64:
+        build:
+            context: .
+            dockerfile: ./docker/valgrind.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:bionic
+                - PLATFORM=linux/arm64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/arm64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    valgrind-ubuntu-focal-amd64:
+        build:
+            context: .
+            dockerfile: ./docker/valgrind.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:focal
+                - PLATFORM=linux/amd64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/amd64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    valgrind-ubuntu-focal-arm64:
+        build:
+            context: .
+            dockerfile: ./docker/valgrind.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:focal
+                - PLATFORM=linux/arm64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/arm64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    valgrind-ubuntu-jammy-amd64:
+        build:
+            context: .
+            dockerfile: ./docker/valgrind.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:jammy
+                - PLATFORM=linux/amd64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/amd64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    valgrind-ubuntu-jammy-arm64:
+        build:
+            context: .
+            dockerfile: ./docker/valgrind.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:jammy
+                - PLATFORM=linux/arm64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/arm64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    valgrind-ubuntu-noble-amd64:
+        build:
+            context: .
+            dockerfile: ./docker/valgrind.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:noble
+                - PLATFORM=linux/amd64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/amd64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    valgrind-ubuntu-noble-arm64:
+        build:
+            context: .
+            dockerfile: ./docker/valgrind.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:noble
+                - PLATFORM=linux/arm64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/arm64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    valgrind-ubuntu-plucky-amd64:
+        build:
+            context: .
+            dockerfile: ./docker/valgrind.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:plucky
+                - PLATFORM=linux/amd64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/amd64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    valgrind-ubuntu-plucky-arm64:
+        build:
+            context: .
+            dockerfile: ./docker/valgrind.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:plucky
+                - PLATFORM=linux/arm64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/arm64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    valgrind-ubuntu-questing-amd64:
+        build:
+            context: .
+            dockerfile: ./docker/valgrind.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:questing
+                - PLATFORM=linux/amd64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/amd64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    valgrind-ubuntu-questing-arm64:
+        build:
+            context: .
+            dockerfile: ./docker/valgrind.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:questing
+                - PLATFORM=linux/arm64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/arm64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    valgrind-ubuntu-resolute-amd64:
+        build:
+            context: .
+            dockerfile: ./docker/valgrind.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:resolute
+                - PLATFORM=linux/amd64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/amd64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    valgrind-ubuntu-resolute-arm64:
+        build:
+            context: .
+            dockerfile: ./docker/valgrind.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:resolute
+                - PLATFORM=linux/arm64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/arm64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    valgrind-debian-bullseye-amd64:
+        build:
+            context: .
+            dockerfile: ./docker/valgrind.Dockerfile
+            args:
+                - BUILD_IMAGE=debian:bullseye
+                - PLATFORM=linux/amd64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/amd64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    valgrind-debian-bullseye-arm64:
+        build:
+            context: .
+            dockerfile: ./docker/valgrind.Dockerfile
+            args:
+                - BUILD_IMAGE=debian:bullseye
+                - PLATFORM=linux/arm64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/arm64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    valgrind-debian-bookworm-amd64:
+        build:
+            context: .
+            dockerfile: ./docker/valgrind.Dockerfile
+            args:
+                - BUILD_IMAGE=debian:bookworm
+                - PLATFORM=linux/amd64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/amd64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    valgrind-debian-bookworm-arm64:
+        build:
+            context: .
+            dockerfile: ./docker/valgrind.Dockerfile
+            args:
+                - BUILD_IMAGE=debian:bookworm
+                - PLATFORM=linux/arm64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/arm64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    valgrind-debian-trixie-amd64:
+        build:
+            context: .
+            dockerfile: ./docker/valgrind.Dockerfile
+            args:
+                - BUILD_IMAGE=debian:trixie
+                - PLATFORM=linux/amd64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/amd64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    valgrind-debian-trixie-arm64:
+        build:
+            context: .
+            dockerfile: ./docker/valgrind.Dockerfile
+            args:
+                - BUILD_IMAGE=debian:trixie
+                - PLATFORM=linux/arm64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/arm64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    ###########
+    # Doxygen #
+    ###########
+    doxygen-ubuntu-bionic-amd64:
+        build:
+            context: .
+            dockerfile: ./docker/doxygen.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:bionic
+                - PLATFORM=linux/amd64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/amd64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    doxygen-ubuntu-bionic-arm64:
+        build:
+            context: .
+            dockerfile: ./docker/doxygen.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:bionic
+                - PLATFORM=linux/arm64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/arm64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    doxygen-ubuntu-focal-amd64:
+        build:
+            context: .
+            dockerfile: ./docker/doxygen.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:focal
+                - PLATFORM=linux/amd64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/amd64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    doxygen-ubuntu-focal-arm64:
+        build:
+            context: .
+            dockerfile: ./docker/doxygen.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:focal
+                - PLATFORM=linux/arm64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/arm64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    doxygen-ubuntu-jammy-amd64:
+        build:
+            context: .
+            dockerfile: ./docker/doxygen.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:jammy
+                - PLATFORM=linux/amd64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/amd64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    doxygen-ubuntu-jammy-arm64:
+        build:
+            context: .
+            dockerfile: ./docker/doxygen.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:jammy
+                - PLATFORM=linux/arm64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/arm64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    doxygen-ubuntu-noble-amd64:
+        build:
+            context: .
+            dockerfile: ./docker/doxygen.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:noble
+                - PLATFORM=linux/amd64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/amd64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    doxygen-ubuntu-noble-arm64:
+        build:
+            context: .
+            dockerfile: ./docker/doxygen.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:noble
+                - PLATFORM=linux/arm64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/arm64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    doxygen-ubuntu-plucky-amd64:
+        build:
+            context: .
+            dockerfile: ./docker/doxygen.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:plucky
+                - PLATFORM=linux/amd64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/amd64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    doxygen-ubuntu-plucky-arm64:
+        build:
+            context: .
+            dockerfile: ./docker/doxygen.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:plucky
+                - PLATFORM=linux/arm64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/arm64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    doxygen-ubuntu-questing-amd64:
+        build:
+            context: .
+            dockerfile: ./docker/doxygen.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:questing
+                - PLATFORM=linux/amd64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/amd64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    doxygen-ubuntu-questing-arm64:
+        build:
+            context: .
+            dockerfile: ./docker/doxygen.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:questing
+                - PLATFORM=linux/arm64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/arm64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    doxygen-ubuntu-resolute-amd64:
+        build:
+            context: .
+            dockerfile: ./docker/doxygen.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:resolute
+                - PLATFORM=linux/amd64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/amd64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    doxygen-ubuntu-resolute-arm64:
+        build:
+            context: .
+            dockerfile: ./docker/doxygen.Dockerfile
+            args:
+                - BUILD_IMAGE=ubuntu:resolute
+                - PLATFORM=linux/arm64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/arm64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    doxygen-debian-bullseye-amd64:
+        build:
+            context: .
+            dockerfile: ./docker/doxygen.Dockerfile
+            args:
+                - BUILD_IMAGE=debian:bullseye
+                - PLATFORM=linux/amd64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/amd64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    doxygen-debian-bullseye-arm64:
+        build:
+            context: .
+            dockerfile: ./docker/doxygen.Dockerfile
+            args:
+                - BUILD_IMAGE=debian:bullseye
+                - PLATFORM=linux/arm64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/arm64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    doxygen-debian-bookworm-amd64:
+        build:
+            context: .
+            dockerfile: ./docker/doxygen.Dockerfile
+            args:
+                - BUILD_IMAGE=debian:bookworm
+                - PLATFORM=linux/amd64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/amd64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    doxygen-debian-bookworm-arm64:
+        build:
+            context: .
+            dockerfile: ./docker/doxygen.Dockerfile
+            args:
+                - BUILD_IMAGE=debian:bookworm
+                - PLATFORM=linux/arm64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/arm64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    doxygen-debian-trixie-amd64:
+        build:
+            context: .
+            dockerfile: ./docker/doxygen.Dockerfile
+            args:
+                - BUILD_IMAGE=debian:trixie
+                - PLATFORM=linux/amd64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/amd64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
+
+    doxygen-debian-trixie-arm64:
+        build:
+            context: .
+            dockerfile: ./docker/doxygen.Dockerfile
+            args:
+                - BUILD_IMAGE=debian:trixie
+                - PLATFORM=linux/arm64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/arm64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh","-c","cp -a /home/factoryengine/out/. /out"]
