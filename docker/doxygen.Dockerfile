@@ -1,4 +1,4 @@
-ARG BUILD_IMAGE=ubuntu:bionic
+ARG BUILD_IMAGE=ubuntu:focal
 ARG PLATFORM=linux/amd64
 ARG UID=1000
 ARG GID=1000
@@ -40,7 +40,7 @@ RUN echo "${TZ}" > /etc/timezone \
 
 RUN if [ -n "${APT_CMD}" ]; then \
   export DEBIAN_FRONTEND=noninteractive; \
-  apt-get update && apt-get install -y --no-install-recommends git build-essential tar cmake flex libzstd-dev bison graphviz wget curl zip unzip ca-certificates; \
+  apt-get update && apt-get install -y --no-install-recommends git build-essential tar cmake flex libzstd-dev bison graphviz wget curl zip unzip ca-certificates python3; \
   apt-get install -y --no-install-recommends lsb-release gnupg software-properties-common || true; \
   update-ca-certificates || true; \
   fi

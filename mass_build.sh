@@ -14,12 +14,9 @@ fi
 ALL_OUTPUTS=(python gcc gdb valgrind doxygen)
 ALL_PLATFORMS=(amd64 arm64)
 ALL_OSES=(
-  "ubuntu:bionic"
   "ubuntu:focal"
   "ubuntu:jammy"
   "ubuntu:noble"
-  "ubuntu:plucky"
-  "ubuntu:questing"
   "ubuntu:resolute"
   "debian:bullseye"
   "debian:bookworm"

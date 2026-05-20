@@ -1,4 +1,4 @@
-ARG BUILD_IMAGE=ubuntu:bionic
+ARG BUILD_IMAGE=ubuntu:focal
 ARG PLATFORM=linux/amd64
 ARG UID=1000
 ARG GID=1000
