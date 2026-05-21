@@ -112,6 +112,6 @@ RUN mkdir -p /home/factoryengine/out
 # Next, create the symlink for `python` inside `${FE_DIR}/python`
 WORKDIR ${FE_DIR}/python
 RUN ln -s ./bin/python3 ./python
-RUN tar cvf - . | gzip -9  - > "/home/factoryengine/out/Python-${PYTHON_VERSION}-$(grep '^ID=' /etc/os-release | awk -F'=' '{print $2}')_$(grep -oP '^VERSION=\"\d+.*$' /etc/os-release | sed -n 's/VERSION=\"\([0-9]*\).*/\1/p')_$(uname -m).tar.gz"
+RUN tar cvf - . | gzip -9  - > "/home/factoryengine/out/python-${PYTHON_VERSION}-$(grep '^ID=' /etc/os-release | awk -F'=' '{print $2}')_$(grep -oP '^VERSION=\"\d+.*$' /etc/os-release | sed -n 's/VERSION=\"\([0-9]*\).*/\1/p')_$(uname -m).tar.gz"
 
 WORKDIR /home/factoryengine

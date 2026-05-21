@@ -93,7 +93,7 @@ fi
 services=()
 for output in "${output_filter[@]}"; do
   case "$output" in
-    python|gcc|gdb|valgrind|doxygen) : ;;
+    python|cpp|valgrind|doxygen) : ;;
     *)
       echo "Unknown output: $output"
       exit 2
