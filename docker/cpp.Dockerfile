@@ -63,6 +63,9 @@ RUN if [ -n "${APT_CMD}" ]; then \
   fi
 WORKDIR /home/factoryengine/gcc/build
 
+ENV PATH=${FE_DIR}/gcc/bin:${PATH}
+ENV LD_LIBRARY_PATH=${FE_DIR}/gcc/lib64:${LD_LIBRARY_PATH}
+
 RUN if [ -n "${APT_CMD}" ] && [ "$(uname -m)" = "x86_64" ]; then \
     export SPECIAL_FLAGS=""; \
     export LOCAL_TRIPLET="x86_64"; \
@@ -177,6 +180,9 @@ RUN if [ -n "${APT_CMD}" ]; then \
     mkdir build -p; \
   fi
 WORKDIR /home/factoryengine/binutils-gdb/build
+
+ENV PATH=${FE_DIR}/gcc/bin:${PATH}
+ENV LD_LIBRARY_PATH=${FE_DIR}/gcc/lib64:${LD_LIBRARY_PATH}
 
 RUN if [ -n "${APT_CMD}" ]; then \
   # If Ubuntu v26, we need a special flag to avoid a build failure due to a change in the default behavior of auto-load directories. See https://bugs.launchpad.net/ubuntu/+source/gdb/+bug/2004418 for more details. \
