@@ -11,7 +11,7 @@ if [[ ! -f "${COMPOSE_FILE}" ]]; then
   exit 1
 fi
 
-ALL_OUTPUTS=(python gcc gdb valgrind doxygen)
+ALL_OUTPUTS=(python cpp valgrind doxygen)
 ALL_PLATFORMS=(amd64 arm64)
 ALL_OSES=(
   "ubuntu:focal"
