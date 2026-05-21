@@ -102,13 +102,6 @@ RUN if [ -n "${APT_CMD}" ]; then \
     make install; \
   fi
 
-RUN mkdir -p /home/factoryengine/out
-
-WORKDIR ${FE_DIR}/gcc
-RUN if [ -n "${APT_CMD}" ]; then \
-    tar cvf - . | gzip -9  - > "/home/factoryengine/out/gcc-${GCC_VERSION}-$(grep '^ID=' /etc/os-release | awk -F'=' '{print $2}')_$(grep -oP '^VERSION=\"\d+.*$' /etc/os-release | sed -n 's/VERSION=\"\([0-9]*\).*/\1/p')_$(uname -m).tar.gz"; \
-fi
-
 WORKDIR /home/factoryengine
 
 #######
@@ -205,11 +198,17 @@ RUN if [ -n "${APT_CMD}" ]; then \
     make install; \
   fi
 
-COPY --from=gcc_build /home/factoryengine/out /home/factoryengine/out
+
+RUN mkdir -p /home/factoryengine/out
 
 WORKDIR ${FE_DIR}/gdb
 RUN if [ -n "${APT_CMD}" ]; then \
     tar cvf - . | gzip -9  - > "/home/factoryengine/out/gdb-${GDB_VERSION}-$(grep '^ID=' /etc/os-release | awk -F'=' '{print $2}')_$(grep -oP '^VERSION=\"\d+.*$' /etc/os-release | sed -n 's/VERSION=\"\([0-9]*\).*/\1/p')_$(uname -m).tar.gz"; \
+fi
+
+WORKDIR ${FE_DIR}/gcc
+RUN if [ -n "${APT_CMD}" ]; then \
+    tar cvf - . | gzip -9  - > "/home/factoryengine/out/gcc-${GCC_VERSION}-$(grep '^ID=' /etc/os-release | awk -F'=' '{print $2}')_$(grep -oP '^VERSION=\"\d+.*$' /etc/os-release | sed -n 's/VERSION=\"\([0-9]*\).*/\1/p')_$(uname -m).tar.gz"; \
 fi
 
 WORKDIR /home/factoryengine
