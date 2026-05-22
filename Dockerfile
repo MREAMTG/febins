@@ -1,6 +1,5 @@
-ARG BUILD_IMAGE=ubuntu:bionic-20210512
+ARG BUILD_IMAGE=ubuntu:bionic
 ARG PLATFORM=linux/amd64
-
 
 FROM --platform=${PLATFORM} ${BUILD_IMAGE} AS python_build
 
@@ -439,18 +438,18 @@ WORKDIR /home/factoryengine
 RUN mkdir -p "${DOXYGEN_INSTALL_DIR}" && chown -R ${UID}:${GID} "${DOXYGEN_INSTALL_DIR}"
 USER factoryengine
 
-ARG cmakeVersion='3.31.8'
-ARG cmakeMajorMinor='3.31'
+ARG CMAKE_VERSION='3.31.8'
+ARG CMAKE_MAJOR_MINOR='3.31'
 
 RUN if [ -n "${APT_CMD}" ] & [ "$(uname -m)" = "x86_64" ]; then \
-    export downloadURL="https://github.com/MREAMTG/febins/releases/download/cmake/cmake-${cmakeVersion}-linux-x86_64.tar.gz"; \
-    export downloadName="cmake-${cmakeVersion}-linux-x86_64.tar.gz"; \
-    export folderName="cmake-${cmakeVersion}-linux-x86_64"; \
+    export downloadURL="https://github.com/MREAMTG/febins/releases/download/cmake/cmake-${CMAKE_VERSION}-linux-x86_64.tar.gz"; \
+    export downloadName="cmake-${CMAKE_VERSION}-linux-x86_64.tar.gz"; \
+    export folderName="cmake-${CMAKE_VERSION}-linux-x86_64"; \
     echo "Using x86_64"; \
 else \
-    export downloadURL="https://github.com/MREAMTG/febins/releases/download/cmake/cmake-${cmakeVersion}-linux-aarch64.tar.gz"; \
-    export downloadName="cmake-${cmakeVersion}-linux-aarch64.tar.gz"; \
-    export folderName="cmake-${cmakeVersion}-linux-aarch64"; \
+    export downloadURL="https://github.com/MREAMTG/febins/releases/download/cmake/cmake-${CMAKE_VERSION}-linux-aarch64.tar.gz"; \
+    export downloadName="cmake-${CMAKE_VERSION}-linux-aarch64.tar.gz"; \
+    export folderName="cmake-${CMAKE_VERSION}-linux-aarch64"; \
     echo "Using aarch64"; \
 fi && if [ -n "${APT_CMD}" ]; then \
     wget ${downloadURL}; \
@@ -465,7 +464,7 @@ fi
 
 USER root
 RUN if [ -n "${APT_CMD}" ]; then \
-  ./llvm.sh 17 all; \
+  ./llvm.sh ${LLVM_VERSION} all; \
 fi
 USER factoryengine
 
@@ -478,8 +477,8 @@ RUN mkdir -p build
 WORKDIR ./build
 
 RUN if [ -n "${APT_CMD}" ]; then \
-  export LLVM_DIR=/usr/lib/llvm-17/cmake; \
-  export CLANG_DIR=/usr/lib/clang-17/cmake; \
+  export LLVM_DIR=/usr/lib/llvm-${LLVM_VERSION}/cmake; \
+  export CLANG_DIR=/usr/lib/clang-${LLVM_VERSION}/cmake; \
   ../../cmake/bin/cmake .. -Duse_libclang=ON -DCMAKE_INSTALL_PREFIX=${DOXYGEN_INSTALL_DIR}; \
 fi
 RUN if [ -n "${APT_CMD}" ]; then \
