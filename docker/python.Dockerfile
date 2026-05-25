@@ -51,6 +51,7 @@ RUN if [ -n "${APT_CMD}" ]; then \
     libncursesw5-dev \
     libssl-dev \
     libsqlite3-dev \
+    openssl \
     tk-dev \
     libgdbm-dev \
     libc6-dev \
@@ -103,7 +104,10 @@ RUN wget "https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VE
 RUN tar -xvf "Python-${PYTHON_VERSION}.tgz" -C "${FE_DIR}/build" --strip-components=1
 
 # Build Python from source
-RUN ./configure --prefix="${FE_DIR}/python" --enable-shared
+RUN ./configure --prefix="${FE_DIR}/python" \
+    --enable-shared  \
+    --with-openssl=/usr \
+    --with-openssl-rpath=auto
 RUN make -j$(nproc)
 RUN make install -j$(nproc)
 
