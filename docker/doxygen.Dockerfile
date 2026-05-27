@@ -107,7 +107,7 @@ RUN mkdir -p /home/factoryengine/out
 
 WORKDIR ${FE_DIR}/doxygen
 RUN if command -v apt-get >/dev/null 2>&1; then \
-    tar cvf - . | gzip -9  - > "/home/factoryengine/out/doxygen-${DOXYGEN_VERSION}-$(grep '^ID=' /etc/os-release | awk -F'=' '{print $2}')_$(grep -oP '^VERSION=\"\d+.*$' /etc/os-release | sed -n 's/VERSION=\"\([0-9]*\).*/\1/p')_$(uname -m).tar.gz"; \
+    tar cvf - . | gzip -9  - > "/home/factoryengine/out/doxygen-${DOXYGEN_VERSION}-$(grep '^ID=' /etc/os-release | awk -F'=' '{print $2}')_$(grep -oP '^VERSION_ID=\"\d+.*$' /etc/os-release | sed -n 's/VERSION_ID=\"\([0-9]*\).*/\1/p')_$(uname -m).tar.gz"; \
 fi
 
 WORKDIR /home/factoryengine
