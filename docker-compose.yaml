@@ -310,6 +310,50 @@ services:
             - ./out:/out
         command: ["/bin/sh", "-c", "cp -a /home/factoryengine/out/. /out"]
 
+    python-alpine-3.23-amd64:
+        build:
+            context: .
+            dockerfile: ./docker/python.Dockerfile
+            args:
+                - BUILD_IMAGE=alpine:3.23
+                - PLATFORM=linux/amd64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/amd64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh", "-c", "cp -a /home/factoryengine/out/. /out"]
+
+    python-alpine-3.23-arm64:
+        build:
+            context: .
+            dockerfile: ./docker/python.Dockerfile
+            args:
+                - BUILD_IMAGE=alpine:3.23
+                - PLATFORM=linux/arm64
+                - UID=1000
+                - GID=1000
+                - TZ=America/Toronto
+                - PYTHON_VERSION=3.12.13
+                - GCC_VERSION=16.1.0
+                - GDB_VERSION=17.1
+                - VALGRIND_VERSION=3.27.0
+                - DOXYGEN_VERSION=1.17.0
+                - CMAKE_VERSION=3.31.12
+                - LLVM_VERSION=22
+        platform: linux/arm64
+        volumes:
+            - ./out:/out
+        command: ["/bin/sh", "-c", "cp -a /home/factoryengine/out/. /out"]
+
     #######
     # CPP #
     #######

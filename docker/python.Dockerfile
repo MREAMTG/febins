@@ -17,23 +17,23 @@ ARG FE_DIR
 ENV UID=${UID} \
   GID=${GID} \
   TZ=${TZ} \
-  PYTHON_VERSION=${PYTHON_VERSION} \
-  APT_CMD="$(which apt-get)" \
-  YUM_CMD="$(which yum)" \
-  DNF_CMD="$(which dnf)" \
-  ZYPPER_CMD="$(which zypper)" \
-  APK_CMD="$(which apk)"
+  PYTHON_VERSION=${PYTHON_VERSION}
 
 # Create a user to run the build process
-RUN groupadd -o -g ${GID} factoryengine
-RUN useradd -o -u ${UID} -g ${GID} -s /bin/sh -d /home/factoryengine -m factoryengine
+RUN if command -v apk >/dev/null 2>&1; then \
+    addgroup -g ${GID} factoryengine && adduser -u ${UID} -D -G factoryengine -h /home/factoryengine -s /bin/sh factoryengine; \
+  else \
+    groupadd -o -g ${GID} factoryengine && useradd -o -u ${UID} -g ${GID} -s /bin/sh -d /home/factoryengine -m factoryengine; \
+  fi
 
-RUN if [ -n "${APT_CMD}" ]; then \
-  export DEBIAN_FRONTEND=noninteractive; \
-  apt-get update && apt-get install -y --no-install-recommends tzdata; \
-  elif [ -n "${YUM_CMD}" ]; then \
+RUN if command -v apt-get >/dev/null 2>&1; then \
+    export DEBIAN_FRONTEND=noninteractive; \
+    apt-get update && apt-get install -y --no-install-recommends tzdata; \
+  elif command -v apk >/dev/null 2>&1; then \
+    apk add --no-cache tzdata; \
+  elif command -v yum >/dev/null 2>&1; then \
     yum install -y tzdata; \
-  elif [ -n "${DNF_CMD}" ]; then \
+  elif command -v dnf >/dev/null 2>&1; then \
     dnf install -y tzdata; \
   else \
     echo "Package manager not supported."; exit 1; \
@@ -41,9 +41,9 @@ RUN if [ -n "${APT_CMD}" ]; then \
 
 RUN echo "${TZ}" > /etc/timezone \
   && ln -fsn "/usr/share/zoneinfo/${TZ}" /etc/localtime \
-  && if [ -n "${APT_CMD}" ]; then DEBIAN_FRONTEND=noninteractive dpkg-reconfigure --frontend noninteractive tzdata; fi
+  && if command -v apt-get >/dev/null 2>&1; then DEBIAN_FRONTEND=noninteractive dpkg-reconfigure --frontend noninteractive tzdata; fi
 
-RUN if [ -n "${APT_CMD}" ]; then \
+RUN if command -v apt-get >/dev/null 2>&1; then \
   export DEBIAN_FRONTEND=noninteractive; \
   apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
@@ -62,7 +62,7 @@ RUN if [ -n "${APT_CMD}" ]; then \
   apt-get install -y --no-install-recommends software-properties-common python3-launchpadlib || true; \
   apt-get install -y --no-install-recommends libgdbm-compat-dev || true; \
   update-ca-certificates || true; \
-  elif [ -n "${YUM_CMD}" ]; then \
+  elif command -v yum >/dev/null 2>&1; then \
     yum groupinstall 'Development Tools' -y && yum install -y \
       gcc \
       ncurses-devel \
@@ -72,7 +72,7 @@ RUN if [ -n "${APT_CMD}" ]; then \
       glibc-devel \
       sqlite-devel \
       zlib-devel; \
-  elif [ -n "${DNF_CMD}" ]; then \
+  elif command -v dnf >/dev/null 2>&1; then \
     dnf groupinstall 'Development Tools' -y && dnf install -y \
       gcc \
       ncurses-devel \
@@ -82,12 +82,17 @@ RUN if [ -n "${APT_CMD}" ]; then \
       glibc-devel \
       sqlite-devel \
       zlib-devel; \
-  elif [ -n "${ZYPPER_CMD}" ]; then \
+  elif command -v zypper >/dev/null 2>&1; then \
     echo "Zypper is not supported yet in our system."; exit 1; \
-  elif [ -n "${APK_CMD}" ]; then \
-    apk add --no-cache gcc gcompat musl-dev \
-      sqlite-dev \
-      zlib-dev; echo "apk is not yet supported."; exit 1; \
+  elif command -v apk >/dev/null 2>&1; then \
+    apk add --no-cache \
+      bash curl gcc make \
+      musl-dev gcompat libffi-dev \
+      openssl-dev openssl \
+      jpeg-dev zlib-dev \
+      cairo-dev pango-dev gdk-pixbuf-dev \
+      ca-certificates \
+      bzip2-dev xz-dev readline-dev sqlite-dev; \
   else \
     echo "Unknown package manager"; exit 1; \
   fi
@@ -107,7 +112,8 @@ RUN tar -xvf "Python-${PYTHON_VERSION}.tgz" -C "${FE_DIR}/build" --strip-compone
 RUN ./configure --prefix="${FE_DIR}/python" \
     --enable-shared  \
     --with-openssl=/usr \
-    --with-openssl-rpath=auto
+    --with-openssl-rpath=auto \
+    --enable-shared
 RUN make -j$(nproc)
 RUN make install -j$(nproc)
 

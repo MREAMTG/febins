@@ -24,26 +24,25 @@ ENV UID=${UID} \
     TZ=${TZ} \
     GCC_VERSION=${GCC_VERSION} \
     GDB_VERSION=${GDB_VERSION} \
-    FE_DIR=${FE_DIR} \
-    APT_CMD="$(which apt-get)"
+    FE_DIR=${FE_DIR}
 
 # ── Users & timezone ────────────────────────────────────────────────────────
 RUN groupadd -o -g ${GID} factoryengine \
  && useradd -o -u ${UID} -g ${GID} -s /bin/sh -d /home/factoryengine -m factoryengine
 
-RUN if [ -n "${APT_CMD}" ]; then \
+RUN if command -v apt-get >/dev/null 2>&1; then \
       export DEBIAN_FRONTEND=noninteractive; \
       apt-get update && apt-get install -y --no-install-recommends tzdata; \
     fi
 
 RUN echo "${TZ}" > /etc/timezone \
  && ln -fsn "/usr/share/zoneinfo/${TZ}" /etc/localtime \
- && if [ -n "${APT_CMD}" ]; then \
+ && if command -v apt-get >/dev/null 2>&1; then \
       DEBIAN_FRONTEND=noninteractive dpkg-reconfigure --frontend noninteractive tzdata; \
     fi
 
 # ── All build dependencies (GCC + GDB combined) ──────────────────────────────
-RUN if [ -n "${APT_CMD}" ]; then \
+RUN if command -v apt-get >/dev/null 2>&1; then \
       export DEBIAN_FRONTEND=noninteractive; \
       apt-get update && apt-get install -y --no-install-recommends \
         autoconf libtool gettext bison dejagnu flex procps gobjc \
@@ -57,7 +56,7 @@ RUN if [ -n "${APT_CMD}" ]; then \
       update-ca-certificates || true; \
     fi
 
-RUN if [ -n "${APT_CMD}" ] && [ "$(uname -m)" = "x86_64" ]; then \
+RUN if command -v apt-get >/dev/null 2>&1 && [ "$(uname -m)" = "x86_64" ]; then \
       apt-get install -y --no-install-recommends libipt-dev || true; \
     fi
 
@@ -69,7 +68,7 @@ USER factoryengine
 WORKDIR /home/factoryengine
 
 # ── Clone GCC ────────────────────────────────────────────────────────────────
-RUN if [ -n "${APT_CMD}" ]; then \
+RUN if command -v apt-get >/dev/null 2>&1; then \
       git clone git://gcc.gnu.org/git/gcc.git \
         -b releases/gcc-${GCC_VERSION} --depth=1; \
     fi
@@ -80,11 +79,11 @@ ENV PATH=${FE_DIR}/gcc/bin:${PATH}
 ENV LD_LIBRARY_PATH=${FE_DIR}/gcc/lib64:${LD_LIBRARY_PATH}
 
 WORKDIR /home/factoryengine/gcc
-RUN if [ -n "${APT_CMD}" ]; then ./contrib/download_prerequisites; fi
+RUN if command -v apt-get >/dev/null 2>&1; then ./contrib/download_prerequisites; fi
 RUN mkdir -p build
 
 WORKDIR /home/factoryengine/gcc/build
-RUN if [ -n "${APT_CMD}" ]; then \
+RUN if command -v apt-get >/dev/null 2>&1; then \
       if [ "$(uname -m)" = "x86_64" ]; then \
         SPECIAL_FLAGS=""; LOCAL_TRIPLET="x86_64"; \
       else \
@@ -115,12 +114,12 @@ RUN if [ -n "${APT_CMD}" ]; then \
         --with-default-libstdcxx-abi=new \
         --with-gcc-major-version-only ${SPECIAL_FLAGS}; \
     fi
-RUN if [ -n "${APT_CMD}" ]; then make -j$(nproc); fi
-RUN if [ -n "${APT_CMD}" ]; then make install; fi
+RUN if command -v apt-get >/dev/null 2>&1; then make -j$(nproc); fi
+RUN if command -v apt-get >/dev/null 2>&1; then make install; fi
 
 # ── Clone GDB ────────────────────────────────────────────────────────────────
 WORKDIR /home/factoryengine
-RUN if [ -n "${APT_CMD}" ]; then \
+RUN if command -v apt-get >/dev/null 2>&1; then \
       git clone https://sourceware.org/git/binutils-gdb.git \
         -b gdb-${GDB_VERSION}-release --depth=1; \
     fi
@@ -130,7 +129,7 @@ WORKDIR /home/factoryengine/binutils-gdb
 RUN mkdir -p build
 
 WORKDIR /home/factoryengine/binutils-gdb/build
-RUN if [ -n "${APT_CMD}" ]; then \
+RUN if command -v apt-get >/dev/null 2>&1; then \
       if [ -f /etc/os-release ] \
         && grep -q "Ubuntu" /etc/os-release \
         && grep -q "26" /etc/os-release; then \
@@ -145,18 +144,18 @@ RUN if [ -n "${APT_CMD}" ]; then \
             --with-auto-load-safe-path=${FE_DIR}/gcc/lib64:\$debugdir:\$datadir/auto-load; \
       fi; \
     fi
-RUN if [ -n "${APT_CMD}" ]; then make -j$(nproc); fi
-RUN if [ -n "${APT_CMD}" ]; then make install; fi
+RUN if command -v apt-get >/dev/null 2>&1; then make -j$(nproc); fi
+RUN if command -v apt-get >/dev/null 2>&1; then make install; fi
 
 # ── Package both artifacts ────────────────────────────────────────────────────
 WORKDIR ${FE_DIR}/gdb
-RUN if [ -n "${APT_CMD}" ]; then \
+RUN if command -v apt-get >/dev/null 2>&1; then \
       tar cvf - . | gzip -9 - > \
         "/home/factoryengine/out/gdb-${GDB_VERSION}-$(grep '^ID=' /etc/os-release | awk -F'=' '{print $2}')_$(grep -oP '^VERSION=\"\d+.*$' /etc/os-release | sed -n 's/VERSION=\"\([0-9]*\).*/\1/p')_$(uname -m).tar.gz"; \
     fi
 
 WORKDIR ${FE_DIR}/gcc
-RUN if [ -n "${APT_CMD}" ]; then \
+RUN if command -v apt-get >/dev/null 2>&1; then \
       tar cvf - . | gzip -9 - > \
         "/home/factoryengine/out/gcc-${GCC_VERSION}-$(grep '^ID=' /etc/os-release | awk -F'=' '{print $2}')_$(grep -oP '^VERSION=\"\d+.*$' /etc/os-release | sed -n 's/VERSION=\"\([0-9]*\).*/\1/p')_$(uname -m).tar.gz"; \
     fi

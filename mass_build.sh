@@ -21,6 +21,7 @@ ALL_OSES=(
   "debian:bullseye"
   "debian:bookworm"
   "debian:trixie"
+  "alpine:3.23"
 )
 
 usage() {

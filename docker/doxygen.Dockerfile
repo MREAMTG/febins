@@ -23,22 +23,21 @@ ENV UID=${UID} \
   TZ=${TZ} \
   DOXYGEN_VERSION=${DOXYGEN_VERSION} \
   CMAKE_VERSION=${CMAKE_VERSION} \
-  LLVM_VERSION=${LLVM_VERSION} \
-  APT_CMD="$(which apt-get)"
+  LLVM_VERSION=${LLVM_VERSION}
 
 RUN groupadd -o -g ${GID} factoryengine
 RUN useradd -o -u ${UID} -g ${GID} -s /bin/sh -d /home/factoryengine -m factoryengine
 
-RUN if [ -n "${APT_CMD}" ]; then \
+RUN if command -v apt-get >/dev/null 2>&1; then \
   export DEBIAN_FRONTEND=noninteractive; \
   apt-get update && apt-get install -y --no-install-recommends tzdata; \
   fi
 
 RUN echo "${TZ}" > /etc/timezone \
   && ln -fsn "/usr/share/zoneinfo/${TZ}" /etc/localtime \
-  && if [ -n "${APT_CMD}" ]; then DEBIAN_FRONTEND=noninteractive dpkg-reconfigure --frontend noninteractive tzdata; fi
+  && if command -v apt-get >/dev/null 2>&1; then DEBIAN_FRONTEND=noninteractive dpkg-reconfigure --frontend noninteractive tzdata; fi
 
-RUN if [ -n "${APT_CMD}" ]; then \
+RUN if command -v apt-get >/dev/null 2>&1; then \
   export DEBIAN_FRONTEND=noninteractive; \
   apt-get update && apt-get install -y --no-install-recommends git build-essential tar cmake flex libzstd-dev bison graphviz wget curl zip unzip ca-certificates python3; \
   apt-get install -y --no-install-recommends lsb-release gnupg software-properties-common || true; \
@@ -50,7 +49,7 @@ WORKDIR /home/factoryengine
 RUN mkdir -p "${FE_DIR}/doxygen" && chown -R ${UID}:${GID} "${FE_DIR}/doxygen"
 USER factoryengine
 
-RUN if [ -n "${APT_CMD}" ]; then \
+RUN if command -v apt-get >/dev/null 2>&1; then \
     arch_suffix="$(if [ "$(uname -m)" = "x86_64" ]; then echo x86_64; else echo aarch64; fi)"; \
     CMAKE_MAJOR_MINOR="$(echo "${CMAKE_VERSION}" | awk -F. '{print $1"."$2}')"; \
     downloadURL="https://github.com/MREAMTG/febins/releases/download/cmake/cmake-${CMAKE_VERSION}-linux-${arch_suffix}.tar.gz"; \
@@ -66,18 +65,18 @@ RUN if [ -n "${APT_CMD}" ]; then \
     mv "${folderName}" cmake; \
   fi
 
-RUN if [ -n "${APT_CMD}" ]; then \
+RUN if command -v apt-get >/dev/null 2>&1; then \
   wget https://apt.llvm.org/llvm.sh; \
   chmod +x llvm.sh; \
 fi
 
 USER root
-RUN if [ -n "${APT_CMD}" ]; then \
+RUN if command -v apt-get >/dev/null 2>&1; then \
   ./llvm.sh ${LLVM_VERSION} all || true; \
 fi
 USER factoryengine
 
-RUN if [ -n "${APT_CMD}" ]; then \
+RUN if command -v apt-get >/dev/null 2>&1; then \
     DOXYGEN_TAG="Release_$(echo "${DOXYGEN_VERSION}" | tr '.' '_')"; \
     git clone https://github.com/doxygen/doxygen.git -b "${DOXYGEN_TAG}" --depth=1; \
   fi
@@ -86,7 +85,7 @@ WORKDIR /home/factoryengine/doxygen
 RUN mkdir -p build
 WORKDIR /home/factoryengine/doxygen/build
 
-RUN if [ -n "${APT_CMD}" ]; then \
+RUN if command -v apt-get >/dev/null 2>&1; then \
     LLVM_DIR="/usr/lib/llvm-${LLVM_VERSION}/lib/cmake/llvm"; \
     CLANG_DIR="/usr/lib/llvm-${LLVM_VERSION}/lib/cmake/clang"; \
     if [ -d "${LLVM_DIR}" ] && [ -d "${CLANG_DIR}" ]; then \
@@ -97,17 +96,17 @@ RUN if [ -n "${APT_CMD}" ]; then \
     fi; \
   fi
 
-RUN if [ -n "${APT_CMD}" ]; then \
+RUN if command -v apt-get >/dev/null 2>&1; then \
     make -j$(nproc); \
   fi
-RUN if [ -n "${APT_CMD}" ]; then \
+RUN if command -v apt-get >/dev/null 2>&1; then \
     make install; \
   fi
 
 RUN mkdir -p /home/factoryengine/out
 
 WORKDIR ${FE_DIR}/doxygen
-RUN if [ -n "${APT_CMD}" ]; then \
+RUN if command -v apt-get >/dev/null 2>&1; then \
     tar cvf - . | gzip -9  - > "/home/factoryengine/out/doxygen-${DOXYGEN_VERSION}-$(grep '^ID=' /etc/os-release | awk -F'=' '{print $2}')_$(grep -oP '^VERSION=\"\d+.*$' /etc/os-release | sed -n 's/VERSION=\"\([0-9]*\).*/\1/p')_$(uname -m).tar.gz"; \
 fi
 
