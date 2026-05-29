@@ -4,14 +4,13 @@ set -euo pipefail
 
 docker run --privileged --name binfmt --rm tonistiigi/binfmt --install all
 
+# Regenerate docker-compose.yaml from the canonical generator script
+python3 "$(dirname "$0")/generate_compose.py"
+
 COMPOSE_FILE="docker-compose.yaml"
 
-if [[ ! -f "${COMPOSE_FILE}" ]]; then
-  echo "Missing ${COMPOSE_FILE}. Run from the repo root."
-  exit 1
-fi
-
-ALL_OUTPUTS=(python cpp valgrind doxygen)
+DEFAULT_OUTPUTS=(gcc gdb python valgrind doxygen)
+AVAILABLE_OUTPUTS=("${DEFAULT_OUTPUTS[@]}" combined)
 ALL_PLATFORMS=(amd64 arm64)
 ALL_OSES=(
   "ubuntu:focal"
@@ -21,19 +20,22 @@ ALL_OSES=(
   "debian:bullseye"
   "debian:bookworm"
   "debian:trixie"
-  "alpine:3.23"
 )
 
 usage() {
   cat <<EOF
 Usage: $0 [--platform=amd64,arm64] [--os=ubuntu:jammy,debian:bookworm] [--output=python,gcc]
 
+Default outputs: gcc  gdb  python  valgrind  doxygen
+Available outputs: gcc  gdb  python  valgrind  doxygen  combined
+
 Examples:
   $0
   $0 --platform=amd64
   $0 --os=ubuntu:jammy,ubuntu:noble
   $0 --output=python
-  $0 --platform=amd64,arm64 --os=ubuntu:jammy --output=python,gdb
+  $0 --output=combined
+  $0 --platform=amd64,arm64 --os=ubuntu:jammy --output=gcc,gdb
 EOF
   exit 1
 }
@@ -88,13 +90,13 @@ if [[ ${#os_filter[@]} -eq 0 ]]; then
   os_filter=("${ALL_OSES[@]}")
 fi
 if [[ ${#output_filter[@]} -eq 0 ]]; then
-  output_filter=("${ALL_OUTPUTS[@]}")
+  output_filter=("${DEFAULT_OUTPUTS[@]}")
 fi
 
 services=()
 for output in "${output_filter[@]}"; do
   case "$output" in
-    python|cpp|valgrind|doxygen) : ;;
+    gcc|gdb|python|valgrind|doxygen|combined) : ;;
     *)
       echo "Unknown output: $output"
       exit 2

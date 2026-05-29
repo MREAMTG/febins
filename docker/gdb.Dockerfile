@@ -1,38 +1,44 @@
-#############
-# GCC + GDB #
-#############
 ARG BUILD_IMAGE=ubuntu:focal
 ARG PLATFORM=linux/amd64
 ARG UID=1000
 ARG GID=1000
 ARG TZ="America/Toronto"
-ARG GCC_VERSION=16.1.0
-ARG GDB_VERSION=16.3
 ARG FE_DIR="/opt/FactoryEngine"
+ARG GCC_VERSION=16.1.0
+ARG GDB_VERSION=17.1
 
-FROM --platform=${PLATFORM} ${BUILD_IMAGE} AS cpp_build
+###############
+# setup_build #
+###############
+FROM --platform=${PLATFORM} ${BUILD_IMAGE} AS setup_build
 
 ARG UID
 ARG GID
 ARG TZ
-ARG GCC_VERSION
-ARG GDB_VERSION
 ARG FE_DIR
 
 ENV UID=${UID} \
     GID=${GID} \
     TZ=${TZ} \
-    GCC_VERSION=${GCC_VERSION} \
-    GDB_VERSION=${GDB_VERSION} \
     FE_DIR=${FE_DIR}
 
-# ── Users & timezone ────────────────────────────────────────────────────────
-RUN groupadd -o -g ${GID} factoryengine \
- && useradd -o -u ${UID} -g ${GID} -s /bin/sh -d /home/factoryengine -m factoryengine
+RUN if command -v apk >/dev/null 2>&1; then \
+      addgroup -g ${GID} factoryengine \
+      && adduser -u ${UID} -D -G factoryengine -h /home/factoryengine -s /bin/sh factoryengine; \
+    else \
+      groupadd -o -g ${GID} factoryengine \
+      && useradd -o -u ${UID} -g ${GID} -s /bin/sh -d /home/factoryengine -m factoryengine; \
+    fi
 
 RUN if command -v apt-get >/dev/null 2>&1; then \
       export DEBIAN_FRONTEND=noninteractive; \
       apt-get update && apt-get install -y --no-install-recommends tzdata; \
+    elif command -v apk >/dev/null 2>&1; then \
+      apk add --no-cache tzdata; \
+    elif command -v yum >/dev/null 2>&1; then \
+      yum install -y tzdata; \
+    elif command -v dnf >/dev/null 2>&1; then \
+      dnf install -y tzdata; \
     fi
 
 RUN echo "${TZ}" > /etc/timezone \
@@ -41,7 +47,18 @@ RUN echo "${TZ}" > /etc/timezone \
       DEBIAN_FRONTEND=noninteractive dpkg-reconfigure --frontend noninteractive tzdata; \
     fi
 
-# ── All build dependencies (GCC + GDB combined) ──────────────────────────────
+RUN mkdir -p "${FE_DIR}" /home/factoryengine/out \
+ && chown ${UID}:${GID} "${FE_DIR}" /home/factoryengine/out
+
+#######
+# GCC #
+#######
+FROM setup_build AS gcc_build
+
+ARG GCC_VERSION
+
+ENV GCC_VERSION=${GCC_VERSION}
+
 RUN if command -v apt-get >/dev/null 2>&1; then \
       export DEBIAN_FRONTEND=noninteractive; \
       apt-get update && apt-get install -y --no-install-recommends \
@@ -60,20 +77,16 @@ RUN if command -v apt-get >/dev/null 2>&1 && [ "$(uname -m)" = "x86_64" ]; then 
       apt-get install -y --no-install-recommends libipt-dev || true; \
     fi
 
-# ── Output dir ───────────────────────────────────────────────────────────────
-RUN mkdir -p "${FE_DIR}/gcc" "${FE_DIR}/gdb" /home/factoryengine/out \
- && chown -R ${UID}:${GID} "${FE_DIR}/gcc" "${FE_DIR}/gdb" /home/factoryengine/out
+RUN mkdir -p "${FE_DIR}/gcc" && chown -R ${UID}:${GID} "${FE_DIR}/gcc"
 
 USER factoryengine
 WORKDIR /home/factoryengine
 
-# ── Clone GCC ────────────────────────────────────────────────────────────────
 RUN if command -v apt-get >/dev/null 2>&1; then \
       git clone git://gcc.gnu.org/git/gcc.git \
         -b releases/gcc-${GCC_VERSION} --depth=1; \
     fi
 
-# ── Build & install GCC ───────────────────────────────────────────────────────
 ENV CONFIG_SHELL=/bin/bash
 ENV PATH=${FE_DIR}/gcc/bin:${PATH}
 ENV LD_LIBRARY_PATH=${FE_DIR}/gcc/lib64:${LD_LIBRARY_PATH}
@@ -117,14 +130,31 @@ RUN if command -v apt-get >/dev/null 2>&1; then \
 RUN if command -v apt-get >/dev/null 2>&1; then make -j$(nproc); fi
 RUN if command -v apt-get >/dev/null 2>&1; then make install; fi
 
-# ── Clone GDB ────────────────────────────────────────────────────────────────
-WORKDIR /home/factoryengine
+RUN if command -v apt-get >/dev/null 2>&1; then \
+      gccMajorVersion="$(echo ${GCC_VERSION} | cut -d. -f1)"; \
+      ln -sf "${FE_DIR}/gcc/bin/gcc-${gccMajorVersion}" "${FE_DIR}/gcc/bin/gcc"; \
+      ln -sf "${FE_DIR}/gcc/bin/g++-${gccMajorVersion}" "${FE_DIR}/gcc/bin/g++"; \
+      ln -sf "${FE_DIR}/gcc/bin/cpp-${gccMajorVersion}" "${FE_DIR}/gcc/bin/cpp" || true; \
+    fi
+
+#######
+# GDB #
+#######
+FROM gcc_build AS gdb_build
+
+ARG GDB_VERSION
+
+ENV GDB_VERSION=${GDB_VERSION}
+
+USER root
+RUN mkdir -p "${FE_DIR}/gdb" && chown -R ${UID}:${GID} "${FE_DIR}/gdb"
+USER factoryengine
+
 RUN if command -v apt-get >/dev/null 2>&1; then \
       git clone https://sourceware.org/git/binutils-gdb.git \
         -b gdb-${GDB_VERSION}-release --depth=1; \
     fi
 
-# ── Build & install GDB ───────────────────────────────────────────────────────
 WORKDIR /home/factoryengine/binutils-gdb
 RUN mkdir -p build
 
@@ -133,12 +163,13 @@ RUN if command -v apt-get >/dev/null 2>&1; then \
       if [ -f /etc/os-release ] \
         && grep -q "Ubuntu" /etc/os-release \
         && grep -q "26" /etc/os-release; then \
-          echo "Ubuntu 26 detected"; \
+          CC="${FE_DIR}/gcc/bin/gcc" CXX="${FE_DIR}/gcc/bin/g++" \
           ../configure --prefix=${FE_DIR}/gdb \
             --disable-gprofng \
             --with-auto-load-dir=\$debugdir:\$datadir/auto-load \
             --with-auto-load-safe-path=${FE_DIR}/gcc/lib64:\$debugdir:\$datadir/auto-load; \
       else \
+          CC="${FE_DIR}/gcc/bin/gcc" CXX="${FE_DIR}/gcc/bin/g++" \
           ../configure --prefix=${FE_DIR}/gdb \
             --with-auto-load-dir=\$debugdir:\$datadir/auto-load \
             --with-auto-load-safe-path=${FE_DIR}/gcc/lib64:\$debugdir:\$datadir/auto-load; \
@@ -147,17 +178,11 @@ RUN if command -v apt-get >/dev/null 2>&1; then \
 RUN if command -v apt-get >/dev/null 2>&1; then make -j$(nproc); fi
 RUN if command -v apt-get >/dev/null 2>&1; then make install; fi
 
-# ── Package both artifacts ────────────────────────────────────────────────────
+# ── Package GDB artifact ──────────────────────────────────────────────────────
 WORKDIR ${FE_DIR}/gdb
 RUN if command -v apt-get >/dev/null 2>&1; then \
       tar cvf - . | gzip -9 - > \
-        "/home/factoryengine/out/gdb-${GDB_VERSION}-$(grep '^ID=' /etc/os-release | awk -F'=' '{print $2}')_$(grep -oP '^VERSION_ID=\"\d+.*$' /etc/os-release | sed -n 's/VERSION_ID=\"\([0-9]*\).*/\1/p')_$(uname -m).tar.gz"; \
-    fi
-
-WORKDIR ${FE_DIR}/gcc
-RUN if command -v apt-get >/dev/null 2>&1; then \
-      tar cvf - . | gzip -9 - > \
-        "/home/factoryengine/out/gcc-${GCC_VERSION}-$(grep '^ID=' /etc/os-release | awk -F'=' '{print $2}')_$(grep -oP '^VERSION_ID=\"\d+.*$' /etc/os-release | sed -n 's/VERSION_ID=\"\([0-9]*\).*/\1/p')_$(uname -m).tar.gz"; \
+        "/home/factoryengine/out/gdb-${GDB_VERSION}-$(grep '^ID=' /etc/os-release | awk -F'=' '{print $2}')_$(grep -oP '^VERSION_ID=\"[0-9]+.*$' /etc/os-release | sed -n 's/VERSION_ID=\"\([0-9]*\).*/\1/p')_$(uname -m).tar.gz"; \
     fi
 
 WORKDIR /home/factoryengine

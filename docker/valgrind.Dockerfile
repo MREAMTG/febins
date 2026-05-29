@@ -3,78 +3,198 @@ ARG PLATFORM=linux/amd64
 ARG UID=1000
 ARG GID=1000
 ARG TZ="America/Toronto"
-ARG VALGRIND_VERSION="3.24.0"
 ARG FE_DIR="/opt/FactoryEngine"
+ARG GCC_VERSION=16.1.0
+ARG VALGRIND_VERSION=3.27.0
 
-FROM --platform=${PLATFORM} ${BUILD_IMAGE} AS valgrind_build
+###############
+# setup_build #
+###############
+FROM --platform=${PLATFORM} ${BUILD_IMAGE} AS setup_build
 
 ARG UID
 ARG GID
 ARG TZ
-ARG VALGRIND_VERSION
 ARG FE_DIR
 
 ENV UID=${UID} \
     GID=${GID} \
     TZ=${TZ} \
-    VALGRIND_VERSION=${VALGRIND_VERSION} \
     FE_DIR=${FE_DIR}
 
-RUN groupadd -o -g ${GID} factoryengine
-RUN useradd -o -u ${UID} -g ${GID} -s /bin/sh -d /home/factoryengine -m factoryengine
+RUN if command -v apk >/dev/null 2>&1; then \
+      addgroup -g ${GID} factoryengine \
+      && adduser -u ${UID} -D -G factoryengine -h /home/factoryengine -s /bin/sh factoryengine; \
+    else \
+      groupadd -o -g ${GID} factoryengine \
+      && useradd -o -u ${UID} -g ${GID} -s /bin/sh -d /home/factoryengine -m factoryengine; \
+    fi
 
 RUN if command -v apt-get >/dev/null 2>&1; then \
-  export DEBIAN_FRONTEND=noninteractive; \
-  apt-get update && apt-get install -y --no-install-recommends tzdata; \
-  fi
+      export DEBIAN_FRONTEND=noninteractive; \
+      apt-get update && apt-get install -y --no-install-recommends tzdata; \
+    elif command -v apk >/dev/null 2>&1; then \
+      apk add --no-cache tzdata; \
+    elif command -v yum >/dev/null 2>&1; then \
+      yum install -y tzdata; \
+    elif command -v dnf >/dev/null 2>&1; then \
+      dnf install -y tzdata; \
+    fi
 
 RUN echo "${TZ}" > /etc/timezone \
-  && ln -fsn "/usr/share/zoneinfo/${TZ}" /etc/localtime \
-  && if command -v apt-get >/dev/null 2>&1; then DEBIAN_FRONTEND=noninteractive dpkg-reconfigure --frontend noninteractive tzdata; fi
+ && ln -fsn "/usr/share/zoneinfo/${TZ}" /etc/localtime \
+ && if command -v apt-get >/dev/null 2>&1; then \
+      DEBIAN_FRONTEND=noninteractive dpkg-reconfigure --frontend noninteractive tzdata; \
+    fi
+
+RUN mkdir -p "${FE_DIR}" /home/factoryengine/out \
+ && chown ${UID}:${GID} "${FE_DIR}" /home/factoryengine/out
+
+#######
+# GCC #
+#######
+FROM setup_build AS gcc_build
+
+ARG GCC_VERSION
+
+ENV GCC_VERSION=${GCC_VERSION}
 
 RUN if command -v apt-get >/dev/null 2>&1; then \
-  export DEBIAN_FRONTEND=noninteractive; \
-  apt-get update && apt-get install -y --no-install-recommends git build-essential tar autoconf automake libtool m4 pkg-config ca-certificates; \
-  apt-get install -y --no-install-recommends mpi-default-dev xsltproc libc-dbg || true; \
-  update-ca-certificates || true; \
-  fi
+      export DEBIAN_FRONTEND=noninteractive; \
+      apt-get update && apt-get install -y --no-install-recommends \
+        autoconf libtool gettext bison dejagnu flex procps gobjc \
+        libexpat1-dev libncurses5-dev libreadline-dev zlib1g-dev liblzma-dev \
+        libbabeltrace-dev libxxhash-dev libmpfr-dev pkg-config python3-dev \
+        build-essential git libgmp-dev texinfo python3 ca-certificates \
+        make gawk libmpc-dev binutils perl tar gzip bzip2 curl \
+        libisl-dev libzstd-dev; \
+      apt-get install -y --no-install-recommends \
+        libc-dbg source-highlight libsource-highlight-dev libdebuginfod-dev || true; \
+      update-ca-certificates || true; \
+    fi
+
+RUN if command -v apt-get >/dev/null 2>&1 && [ "$(uname -m)" = "x86_64" ]; then \
+      apt-get install -y --no-install-recommends libipt-dev || true; \
+    fi
+
+RUN mkdir -p "${FE_DIR}/gcc" && chown -R ${UID}:${GID} "${FE_DIR}/gcc"
+
+USER factoryengine
+WORKDIR /home/factoryengine
+
+RUN if command -v apt-get >/dev/null 2>&1; then \
+      git clone git://gcc.gnu.org/git/gcc.git \
+        -b releases/gcc-${GCC_VERSION} --depth=1; \
+    fi
+
+ENV CONFIG_SHELL=/bin/bash
+ENV PATH=${FE_DIR}/gcc/bin:${PATH}
+ENV LD_LIBRARY_PATH=${FE_DIR}/gcc/lib64:${LD_LIBRARY_PATH}
+
+WORKDIR /home/factoryengine/gcc
+RUN if command -v apt-get >/dev/null 2>&1; then ./contrib/download_prerequisites; fi
+RUN mkdir -p build
+
+WORKDIR /home/factoryengine/gcc/build
+RUN if command -v apt-get >/dev/null 2>&1; then \
+      if [ "$(uname -m)" = "x86_64" ]; then \
+        SPECIAL_FLAGS=""; LOCAL_TRIPLET="x86_64"; \
+      else \
+        SPECIAL_FLAGS="--enable-fix-cortex-a53-843419"; LOCAL_TRIPLET="aarch64"; \
+      fi; \
+      gccMajorVersion="$(echo ${GCC_VERSION} | cut -d. -f1)"; \
+      ../configure \
+        --enable-languages=c,c++,fortran \
+        --prefix=${FE_DIR}/gcc \
+        --disable-multilib \
+        --disable-multi-arch \
+        --program-suffix=-${gccMajorVersion} \
+        --host=${LOCAL_TRIPLET}-linux-gnu \
+        --target=${LOCAL_TRIPLET}-linux-gnu \
+        --disable-werror \
+        --enable-checking=release \
+        --enable-clocale=gnu \
+        --enable-default-pie \
+        --enable-gnu-unique-object \
+        --enable-libphobos-checking=release \
+        --enable-libstdcxx-debug \
+        --enable-libstdcxx-time=yes \
+        --enable-linker-build-id \
+        --enable-nls \
+        --enable-plugin \
+        --enable-shared \
+        --enable-threads=posix \
+        --with-default-libstdcxx-abi=new \
+        --with-gcc-major-version-only ${SPECIAL_FLAGS}; \
+    fi
+RUN if command -v apt-get >/dev/null 2>&1; then make -j$(nproc); fi
+RUN if command -v apt-get >/dev/null 2>&1; then make install; fi
+
+RUN if command -v apt-get >/dev/null 2>&1; then \
+      gccMajorVersion="$(echo ${GCC_VERSION} | cut -d. -f1)"; \
+      ln -sf "${FE_DIR}/gcc/bin/gcc-${gccMajorVersion}" "${FE_DIR}/gcc/bin/gcc"; \
+      ln -sf "${FE_DIR}/gcc/bin/g++-${gccMajorVersion}" "${FE_DIR}/gcc/bin/g++"; \
+      ln -sf "${FE_DIR}/gcc/bin/cpp-${gccMajorVersion}" "${FE_DIR}/gcc/bin/cpp" || true; \
+    fi
 
 WORKDIR /home/factoryengine
 
-RUN mkdir -p "${FE_DIR}/valgrind" && chown -R ${UID}:${GID} "${FE_DIR}/valgrind"
-USER factoryengine
+############
+# VALGRIND #
+############
+FROM setup_build AS valgrind_build
+
+ARG GCC_VERSION
+ARG VALGRIND_VERSION
+
+ENV GCC_VERSION=${GCC_VERSION} \
+    VALGRIND_VERSION=${VALGRIND_VERSION}
 
 RUN if command -v apt-get >/dev/null 2>&1; then \
-    VALGRIND_TAG=$(echo ${VALGRIND_VERSION} | tr '.' '_'); \
-    git clone https://sourceware.org/git/valgrind.git -b VALGRIND_${VALGRIND_TAG} --depth=1; \
-  fi
+      export DEBIAN_FRONTEND=noninteractive; \
+      apt-get update && apt-get install -y --no-install-recommends \
+        git build-essential tar autoconf automake libtool m4 pkg-config ca-certificates; \
+      apt-get install -y --no-install-recommends mpi-default-dev xsltproc libc-dbg || true; \
+      update-ca-certificates || true; \
+    fi
+
+# ── Import custom GCC ─────────────────────────────────────────────────────────
+COPY --from=gcc_build ${FE_DIR}/gcc ${FE_DIR}/gcc
+ENV PATH=${FE_DIR}/gcc/bin:${PATH}
+ENV LD_LIBRARY_PATH=${FE_DIR}/gcc/lib64:${LD_LIBRARY_PATH}
+
+RUN mkdir -p "${FE_DIR}/valgrind" && chown -R ${UID}:${GID} "${FE_DIR}/valgrind"
+
+USER factoryengine
+WORKDIR /home/factoryengine
+
+RUN if command -v apt-get >/dev/null 2>&1; then \
+      VALGRIND_TAG=$(echo ${VALGRIND_VERSION} | tr '.' '_'); \
+      git clone https://sourceware.org/git/valgrind.git -b VALGRIND_${VALGRIND_TAG} --depth=1; \
+    fi
 
 WORKDIR /home/factoryengine/valgrind
 
 RUN if command -v apt-get >/dev/null 2>&1; then \
-  ./autogen.sh; \
-fi
-RUN if command -v apt-get >/dev/null 2>&1 && [ "$(uname -m)" = "x86_64" ]; then \
-    export SPECIAL_FLAGS=""; \
-    echo "Using x86_64"; \
-else \
-    export SPECIAL_FLAGS="--enable-only64bit"; \
-    echo "Using aarch64"; \
-fi && if command -v apt-get >/dev/null 2>&1; then \
-  ./configure --enable-lto=yes --enable-tls --prefix=${FE_DIR}/valgrind ${SPECIAL_FLAGS}; \
-fi
-RUN if command -v apt-get >/dev/null 2>&1; then \
-    make -j$(nproc); \
-  fi
-RUN if command -v apt-get >/dev/null 2>&1; then \
-    make install; \
-  fi
+      ./autogen.sh; \
+    fi
 
-RUN mkdir -p /home/factoryengine/out
+RUN if command -v apt-get >/dev/null 2>&1; then \
+      if [ "$(uname -m)" = "x86_64" ]; then \
+        SPECIAL_FLAGS=""; \
+      else \
+        SPECIAL_FLAGS="--enable-only64bit"; \
+      fi; \
+      CC="${FE_DIR}/gcc/bin/gcc" CXX="${FE_DIR}/gcc/bin/g++" \
+      ./configure --enable-lto=yes --enable-tls --prefix=${FE_DIR}/valgrind ${SPECIAL_FLAGS}; \
+    fi
+
+RUN if command -v apt-get >/dev/null 2>&1; then make -j$(nproc); fi
+RUN if command -v apt-get >/dev/null 2>&1; then make install; fi
 
 WORKDIR ${FE_DIR}/valgrind
 RUN if command -v apt-get >/dev/null 2>&1; then \
-    tar cvf - . | gzip -9  - > "/home/factoryengine/out/valgrind-${VALGRIND_VERSION}-$(grep '^ID=' /etc/os-release | awk -F'=' '{print $2}')_$(grep -oP '^VERSION_ID=\"\d+.*$' /etc/os-release | sed -n 's/VERSION_ID=\"\([0-9]*\).*/\1/p')_$(uname -m).tar.gz"; \
-fi
+      tar cvf - . | gzip -9 - > "/home/factoryengine/out/valgrind-${VALGRIND_VERSION}-$(grep '^ID=' /etc/os-release | awk -F'=' '{print $2}')_$(grep -oP '^VERSION_ID=\"\d+.*$' /etc/os-release | sed -n 's/VERSION_ID=\"\([0-9]*\).*/\1/p')_$(uname -m).tar.gz"; \
+    fi
 
 WORKDIR /home/factoryengine

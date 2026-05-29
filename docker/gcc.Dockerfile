@@ -5,7 +5,6 @@ ARG GID=1000
 ARG TZ="America/Toronto"
 ARG FE_DIR="/opt/FactoryEngine"
 ARG GCC_VERSION=16.1.0
-ARG PYTHON_VERSION=3.12.13
 
 ###############
 # setup_build #
@@ -130,6 +129,7 @@ RUN if command -v apt-get >/dev/null 2>&1; then \
 RUN if command -v apt-get >/dev/null 2>&1; then make -j$(nproc); fi
 RUN if command -v apt-get >/dev/null 2>&1; then make install; fi
 
+# ── Unversioned symlinks so downstream stages can call gcc/g++ directly ───────
 RUN if command -v apt-get >/dev/null 2>&1; then \
       gccMajorVersion="$(echo ${GCC_VERSION} | cut -d. -f1)"; \
       ln -sf "${FE_DIR}/gcc/bin/gcc-${gccMajorVersion}" "${FE_DIR}/gcc/bin/gcc"; \
@@ -137,90 +137,11 @@ RUN if command -v apt-get >/dev/null 2>&1; then \
       ln -sf "${FE_DIR}/gcc/bin/cpp-${gccMajorVersion}" "${FE_DIR}/gcc/bin/cpp" || true; \
     fi
 
-WORKDIR /home/factoryengine
-
-##########
-# PYTHON #
-##########
-FROM setup_build AS python_build
-
-ARG GCC_VERSION
-ARG PYTHON_VERSION
-
-ENV GCC_VERSION=${GCC_VERSION} \
-    PYTHON_VERSION=${PYTHON_VERSION}
-
+# ── Package GCC artifact ──────────────────────────────────────────────────────
+WORKDIR ${FE_DIR}/gcc
 RUN if command -v apt-get >/dev/null 2>&1; then \
-      export DEBIAN_FRONTEND=noninteractive; \
-      apt-get update && apt-get install -y --no-install-recommends \
-        build-essential \
-        checkinstall \
-        libncursesw5-dev \
-        libssl-dev \
-        libsqlite3-dev \
-        openssl \
-        tk-dev \
-        libgdbm-dev \
-        libc6-dev \
-        libbz2-dev \
-        libffi-dev \
-        wget \
-        ca-certificates; \
-      apt-get install -y --no-install-recommends software-properties-common python3-launchpadlib || true; \
-      apt-get install -y --no-install-recommends libgdbm-compat-dev || true; \
-      update-ca-certificates || true; \
-    elif command -v apk >/dev/null 2>&1; then \
-      apk add --no-cache \
-        bash curl gcc make \
-        musl-dev gcompat libffi-dev \
-        openssl-dev openssl \
-        jpeg-dev zlib-dev \
-        cairo-dev pango-dev gdk-pixbuf-dev \
-        ca-certificates \
-        bzip2-dev xz-dev readline-dev sqlite-dev; \
-    elif command -v yum >/dev/null 2>&1; then \
-      yum groupinstall 'Development Tools' -y && yum install -y \
-        gcc ncurses-devel openssl-devel bzip2-devel \
-        libffi-devel glibc-devel sqlite-devel zlib-devel; \
-    elif command -v dnf >/dev/null 2>&1; then \
-      dnf groupinstall 'Development Tools' -y && dnf install -y \
-        gcc ncurses-devel openssl-devel bzip2-devel \
-        libffi-devel glibc-devel sqlite-devel zlib-devel; \
-    else \
-      echo "Unknown package manager"; exit 1; \
+      tar cvf - . | gzip -9 - > \
+        "/home/factoryengine/out/gcc-${GCC_VERSION}-$(grep '^ID=' /etc/os-release | awk -F'=' '{print $2}')_$(grep -oP '^VERSION_ID=\"[0-9]+.*$' /etc/os-release | sed -n 's/VERSION_ID=\"\([0-9]*\).*/\1/p')_$(uname -m).tar.gz"; \
     fi
-
-# ── Import custom GCC (apt-get systems only; Alpine uses system GCC) ──────────
-COPY --from=gcc_build ${FE_DIR}/gcc ${FE_DIR}/gcc
-ENV PATH=${FE_DIR}/gcc/bin:${PATH}
-ENV LD_LIBRARY_PATH=${FE_DIR}/gcc/lib64:${LD_LIBRARY_PATH}
-
-RUN mkdir -p "${FE_DIR}/build" "${FE_DIR}/python" \
- && chown -R ${UID}:${GID} "${FE_DIR}/build" "${FE_DIR}/python"
-
-USER factoryengine
-WORKDIR ${FE_DIR}/build
-
-RUN wget "https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz"
-RUN tar -xvf "Python-${PYTHON_VERSION}.tgz" -C "${FE_DIR}/build" --strip-components=1
-
-RUN if command -v apt-get >/dev/null 2>&1; then \
-      CC="${FE_DIR}/gcc/bin/gcc" CXX="${FE_DIR}/gcc/bin/g++" \
-      ./configure --prefix="${FE_DIR}/python" \
-        --enable-shared \
-        --with-openssl=/usr \
-        --with-openssl-rpath=auto; \
-    else \
-      ./configure --prefix="${FE_DIR}/python" \
-        --enable-shared \
-        --with-openssl=/usr \
-        --with-openssl-rpath=auto; \
-    fi
-RUN make -j$(nproc)
-RUN make install -j$(nproc)
-
-WORKDIR ${FE_DIR}/python
-RUN ln -s ./bin/python3 ./python
-RUN tar cvf - . | gzip -9 - > "/home/factoryengine/out/python-${PYTHON_VERSION}-$(grep '^ID=' /etc/os-release | awk -F'=' '{print $2}')_$(grep -oP '^VERSION_ID=\"\d+.*$' /etc/os-release | sed -n 's/VERSION_ID=\"\([0-9]*\).*/\1/p')_$(uname -m).tar.gz"
 
 WORKDIR /home/factoryengine
